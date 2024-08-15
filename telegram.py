@@ -64,28 +64,28 @@ class TeleMain:
     def run_us(self):
         
         print("\nBot has started")
-        us = [self.tr.run_uscap()]
+        us = self.tr.run_uscap()
         
-        for i in us:
-            if i != "avoid":
-                print(i)
-                self.bot.send_message(-1002242173955,i)
-            
-            time.sleep(40)                
-            if i == "BTC Green":
-                
+        #print(us)
+        
+        if 'BTC Green' in us:
+                print(us)
+                self.bot.send_message(-1002242173955,us)
                 self.mt.buy_btc_order()
-                
-            elif i == "BTC Red":
-                    
+                #print("self.bot.send_message(-1002242173955,us)")
+            
+        elif 'BTC Red' in us:
+                print(us)
+                self.bot.send_message(-1002242173955,us)
                 self.mt.sell_btc_order()
-                
-            else:
-                pass
-    
+                #print("self.bot.send_message(-1002242173955,us)")
+                    
+        else:
+            print("Avoid")
+        
     def temp(self):
         
-        self.bot.send_message(-1002242173955," PERMANENTLY SHUT DOWN THE TELEBOT, API TOKEN REVOKED")
+        self.bot.send_message(-1002242173955," BTC Red")
     
     def start(self):
         
@@ -220,6 +220,7 @@ class tele_main_commands():
 ###############################     ###############################     ###############################     ###############################     ###############################     ###############################
 
 #TeleMain().temp()
+#TeleMain().run_us()
 
 import threading 
 
@@ -234,10 +235,6 @@ thread_b.start()
 
 thread_a.join()
 thread_b.join()
-
-
-
-
 
 
 
