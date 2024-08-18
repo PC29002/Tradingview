@@ -43,12 +43,8 @@ a = TeleMain()
 
 ########################
 
-
-import telebot
-import tradingview
-import time
-import MT5
-import schedule 
+import MT5, schedule, time, tradingview, telebot 
+from datetime import datetime, timedelta
 
 
 class TeleMain:
@@ -61,22 +57,43 @@ class TeleMain:
         self.mt = MT5.mt5()
         self.running = False
     
+    def ist_to_utc(self):
+        # Get the current IST time
+        ist_time_str = datetime.now().strftime('%H:%M:%S')
+    
+        # Define the IST time zone offset (+5:30 hours from UTC)
+        ist_offset = timedelta(hours=5, minutes=30)
+
+        # Parse the input string to a datetime object
+        ist_time = datetime.strptime(ist_time_str, '%H:%M:%S')
+
+        # Subtract the IST offset to get UTC time
+        utc_time = ist_time - ist_offset
+
+        # Format the UTC time as a string
+        utc_time_str = utc_time.strftime('%H:%M:%S')
+
+        # Return the UTC time as a formatted string
+        return f"IST Time: {ist_time_str} -> UTC Time: {utc_time_str}"
+    
+    
     def run_us(self):
         
         print("\nBot has started")
         us = self.tr.run_uscap()
+        timeinfo = self.ist_to_utc()
         
-        #print(us)
-        
+        if not 'avoid' in us:
+            self.bot.send_message(-1002242173955,us)
+            self.bot.send_message(-1002242173955,timeinfo)
+            print(us, timeinfo)
+            
+        time.sleep(40)
         if 'BTC Green' in us:
-                print(us)
-                self.bot.send_message(-1002242173955,us)
                 self.mt.buy_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
             
         elif 'BTC Red' in us:
-                print(us)
-                self.bot.send_message(-1002242173955,us)
                 self.mt.sell_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
                     
@@ -142,7 +159,7 @@ class TeleMain_schedule():
         except Exception as e:
         
             print(f"An error occurred: {e}")
-            telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(-1002242173955,e)
+            #telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(-1002242173955,e)
             self.teleschedule.stop()
     
     # Scheduling for 12:00 AM to 11:30 PM, Monday to Friday
@@ -165,6 +182,10 @@ class TeleMain_schedule():
                 schedule.every().thursday.at(time_str).do(self.schedule_bot_us)
             
                 schedule.every().friday.at(time_str).do(self.schedule_bot_us)
+                
+                schedule.every().saturday.at(time_str).do(self.schedule_bot_us)
+                
+                schedule.every().sunday.at(time_str).do(self.schedule_bot_us)
     
     def run(self):
         
@@ -201,6 +222,16 @@ class tele_main_commands():
             #self.bot.send_message(-1002242173955, order)          
             
             self.teleschedule.mt.shutdown()
+    
+    def command_info(self):
+        
+        @self.teleschedule.bot.message_handler(commands=['help'])
+        def send_help(message):
+            
+            help = ['profit -> Receives Total Profit Amount', 'gorder -> Gets Current no of Orders']
+            for i in help:
+                self.teleschedule.bot.send_message(-1002242173955,i)
+                print(i)
     
     def start_run(self):
         
