@@ -92,17 +92,19 @@ class TeleMain:
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
+                #print(a)
             
         elif 'BTC Red' in us:
                 self.mt.sell_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
+                #print(a)
                     
         else:
             print("Avoid")
         
     def temp(self):
         
-        self.bot.send_message(-1002242173955," BTC Red")
+        self.bot.send_message(-1002242173955," END OF TEST RUN")
     
     def start(self):
         
@@ -205,7 +207,7 @@ class tele_main_commands():
         self.teleschedule = TeleMain()
     
     def check_profit(self):
-        @self.teleschedule.bot.message_handler(commands=['profit'])
+        @self.teleschedule.bot.message_handler(commands=['pro'])
         def send_profit(message):
             profit = self.teleschedule.mt.profit()
             self.teleschedule.bot.send_message(-1002242173955, profit)
@@ -215,7 +217,7 @@ class tele_main_commands():
 
     def get_total_order(self):
         
-        @self.teleschedule.bot.message_handler(commands=['gorder'])
+        @self.teleschedule.bot.message_handler(commands=['gord'])
         def send_order(message):
             order = self.teleschedule.mt.total_order()
             self.teleschedule.bot.send_message(-1002242173955, order)
@@ -223,12 +225,22 @@ class tele_main_commands():
             
             self.teleschedule.mt.shutdown()
     
+    def close_positions(self):
+        @self.teleschedule.bot.message_handler(commands=['cpos'])
+        def send_positions(message):
+            position = self.teleschedule.mt.close_positions()
+            self.teleschedule.bot.send_message(-1002242173955, position)
+            #self.bot.send_message(-1002242173955, order)          
+            
+            self.teleschedule.mt.shutdown()
+        
+    
     def command_info(self):
         
         @self.teleschedule.bot.message_handler(commands=['help'])
         def send_help(message):
             
-            help = ['profit -> Receives Total Profit Amount', 'gorder -> Gets Current no of Orders']
+            help = ['pro -> Receives Total Profit Amount','gord -> Gets Current no of Orders','cpos -> Close all Opened Positions']
             for i in help:
                 self.teleschedule.bot.send_message(-1002242173955,i)
                 print(i)
@@ -239,6 +251,7 @@ class tele_main_commands():
             
             self.check_profit() 
             self.get_total_order()
+            self.command_info()
         
         except Exception as e:
             
@@ -266,31 +279,4 @@ thread_b.start()
 
 thread_a.join()
 thread_b.join()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-    
-    
-
-
-
-    
-
-
-
 
