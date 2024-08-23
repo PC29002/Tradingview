@@ -62,47 +62,55 @@ class tradingview_main():
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
         
-        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]").value_of_css_property("color")
+        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
         EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex      
         
         # S-P
         SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         SuppReshex = Color.from_string(SuppRes).hex    
         
-        # 2 RSI Candle and MACD Normal With EMA Triangle 
-        #BASE Indicator
-        EMA_TriangleG2    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[5]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        EMA_TrianglehexG2 = Color.from_string(EMA_TriangleG2).hex
         
-        EMA_TriangleR2    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[5]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
-        EMA_TrianglehexR2 = Color.from_string(EMA_TriangleR2).hex    
+        #HyperTrend
+        hypertrend    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
+        hypertrendhex = Color.from_string(hypertrend).hex 
         
         print("BTCUSD =>")
-        print("Signal  :", EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, EMA_TrianglehexG2, EMA_TrianglehexR2)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, EMA_TrianglehexG2, EMA_TrianglehexR2]
+        print("Signal  :", EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex]
         
     def color_ident_btc(self):
         
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_btcusd
         
-        # 1st signal
-        #if (b[0] == b[2] == "#00ff00") or (b[3] == "#00ff00"):
-        if (b[0] == b[2] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "BTC Green"
 
-
-        #elif (b[1] == b[2] == "#ff0000") or (b[4] == "#ff0000"):
-        elif (b[1] == b[2] == "#ff0000"):
+        #elif (b[2] == '#00ff00' and b[3] == '#ff0000' and b[1] == '#ff0000'):
+            #print('BTC Green')
+        #    unit = "BTC Green"
+        
+        #elif (b[2] == '#ff0000' and b[3] == '#00ff00' and b[1] == '#ff0000'):
+            #print('BTC Green')
+        #    unit = "BTC Green"
+        
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
             #print("BTC Red")
             unit = "BTC Red"
+
+        #elif (b[2] == '#00ff00' and b[3] == '#ff0000' and b[0] == '#00ff00'):  
+            #print('BTC Red')
+        #    unit = "BTC Red"
+
+        #elif (b[2] == '#ff0000' and b[3] == '#00ff00' and b[0] == '#00ff00'):  
+            #print('BTC Red')
+        #    unit = "BTC Red"
 
         else:
             #print("avoid")
             unit = "avoid"
                 
-        
         return unit
         # ('BTC Green', 'BTC Green') = output: BTC Green
         # ('BTC Red', 'BTC Red')     = output: BTC Red
@@ -158,4 +166,3 @@ def test():
     z = tradingview_main()
     
     print(z.run_uscap())
-    
