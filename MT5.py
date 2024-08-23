@@ -12,10 +12,10 @@ Password: fwaijP14#
 Server:   Exness-MT5Trial6 
 Balance:  500
 
+login_id = 181597191
+            password = "Pcgandu@2002"
+            server = "Exness-MT5Trial6"
 
-FP Markets
-Login    : 7043101
-Password : fwaijP14#
 
 
 """
@@ -34,10 +34,11 @@ class mt5():
                 print("initialize() failed, error code =", self.mt.last_error())
                 quit()
 
-            login_id = 181390836
+            login_id = 146825254
             password = "Pcgandu@2002"
-            server = "Exness-MT5Trial6"
-
+            server = "Exness-MT5Real17"
+            
+            
             if self.mt.login(login_id, password, server):
                 print("Logged in successfully")
             else:
@@ -83,7 +84,29 @@ class mt5():
             print(f"An error occurred: {e}")
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
+
+    def close_positions(self):
     
+        try: 
+            positions = self.mt.positions_get()
+            for position in positions:
+                result = self.mt.Close(symbol='BTCUSDm.',ticket=position.ticket)
+
+                if result != True:
+                    print("No Opened Positions")
+    
+                else:
+                    print(f"Position {position.ticket} closed successfully")
+                    return 
+
+            # Shut down MetaTrader 5
+            self.shutdown()
+    
+        except Exception as e:
+            print("Error:",e)
+
+    
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
     def total_order(self):
         
         try: 
@@ -170,7 +193,8 @@ class mt5():
         request = {
             'action': self.mt.TRADE_ACTION_DEAL,
             'symbol': symbol,
-            'volume': 4.0,
+            'volume': 0.01,
+            #"volume": 3,
             'price': buy,
             'tp': tp,
             'sl': sl,
@@ -189,9 +213,9 @@ class mt5():
             response_dict = response._asdict()
             for key, value in response_dict.items():
                 print(f"{key}: {value}")
-    
-        # Optionally return the request details
-        # return request["symbol"], request["price"], request["tp"], request["sl"]
+
+            # Ensure that we return the comment at the end of the function
+            #return request['comment']
     
     def buy_btc_order(self):
         
@@ -230,7 +254,8 @@ class mt5():
         request = {
         "action": self.mt.TRADE_ACTION_DEAL,
         "symbol": symbol,
-        "volume": 4.0,
+        #"volume": 3,
+        "volume": 0.01,
         "type": self.mt.ORDER_TYPE_SELL,
         "price": sell,
         "tp": tp,
@@ -260,99 +285,6 @@ class mt5():
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-
-    def buy_xausd(self):
-        
-        #self.swing_high_low()
-        
-        symbol = "XAUUSDm"
-        buy    = self.mt.symbol_info_tick(symbol).ask
-        sell   = self.mt.symbol_info_tick(symbol).bid
-        
-        spread = buy - sell
-        print("Spread: ", spread)
-        
-        tp = buy + 3
-        sl = buy - 1.8  
-        
-        request = {
-        "action": self.mt.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": 0.4,
-        "type": self.mt.ORDER_TYPE_BUY,
-        "price": buy,
-        "tp": tp,
-        "sl": sl,
-        "type_time": self.mt.ORDER_TIME_GTC,
-        "type_filling": self.mt.ORDER_FILLING_FOK,
-        }
-    
-        self.mt.order_send(request)._asdict()
-        for i in request:
-            print(i,":",request[i])
-    
-    def buy_xau_order(self):
-        
-        try: 
-            self.login()
-            time.sleep(2)
-            self.sell_btcusd()
-            
-            time.sleep(4)
-            self.shutdown()
-        
-        except Exception as e:
-            print("Check Network or user-details invalid\nMT5 Order Error")
-            print(e)
-            self.shutdown()
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-
-
-    def sell_xausd(self):
-        
-        #self.swing_high_low()
-        
-        symbol = "XAUUSDm"
-        buy    = self.mt.symbol_info_tick(symbol).ask
-        sell   = self.mt.symbol_info_tick(symbol).bid
-        
-        spread = buy - sell
-        print("Spread: ", spread)
-        
-        tp = sell - 3
-        sl = sell + 1.8  
-        
-        request = {
-        "action": self.mt.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": 0.4,
-        "type": self.mt.ORDER_TYPE_SELL,
-        "price": sell,
-        "tp": tp,
-        "sl": sl,
-        "type_time": self.mt.ORDER_TIME_GTC,
-        "type_filling": self.mt.ORDER_FILLING_FOK,
-        }
-    
-        self.mt.order_send(request)._asdict()
-        for i in request:
-            print(i,":",request[i])
-    
-    def sell_xau_order(self):
-        
-        try: 
-            self.login()
-            time.sleep(2)
-            self.sell_btcusd()
-            
-            time.sleep(4)
-            self.shutdown()
-        
-        except Exception as e:
-            print("Check Network or user-details invalid\nMT5 Order Error")
-            print(e)
-            self.shutdown()
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 
@@ -367,4 +299,5 @@ class mt5():
     
 
 #mt5().buy_btc_order()
-mt5().sell_btc_order()
+#mt5().sell_btc_order()
+#mt5().acc_info()
