@@ -121,5 +121,8 @@
 			sudo pip3 install virtualenv
 
 2. Webdriver Link  = https://googlechromelabs.github.io/chrome-for-testing/
-
-3. selenium        = pip install selenium
+   
+3. selenium
+   		pip install selenium
+   		pip install webdriver-manager
+   		
