@@ -132,6 +132,5 @@
 
 		pip install selenium
    		pip install webdriver-manager
-   		pip install MetaTrader5
-   		
-m4^&5d:8eA7u
+   		pip install mt5linux
+   		pip install pandas
