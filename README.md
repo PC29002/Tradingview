@@ -15,14 +15,14 @@
   			sudo add-apt-repository ppa:repository-name
 			sudo apt update
 
-	Install proprietary drivers:
+		Install proprietary drivers:
 
    			sudo ubuntu-drivers autoinstall
 
 	4. Configure System Settings:
 
 			sudo timedatectl set-timezone [your-timezone]
-	Check and configure locale:
+		Check and configure locale:
 
    			sudo dpkg-reconfigure locales
 
@@ -31,7 +31,7 @@
 			sudo ufw enable
 			sudo ufw status
 
-	Install ClamAV (optional):
+		Install ClamAV (optional):
 
    			sudo apt install clamav clamtk
 			sudo systemctl start clamav-freshclam
@@ -40,7 +40,7 @@
 		
   			git config --global user.name "Your Name"
 			git config --global user.email "your.email@example.com"
-	Generate SSH keys:
+		Generate SSH keys:
 
    			ssh-keygen -t rsa -b 4096 -C "your.email@example.com"
 			eval "$(ssh-agent -s)"
@@ -50,7 +50,7 @@
 	7. Install and Manage Software
 
 			sudo apt install snapd
-	Install Flatpak:
+		Install Flatpak:
 
    			sudo apt install flatpak
 			flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -67,14 +67,14 @@
 	Install system monitoring tools:
 		
   			sudo apt install htop glances
-	Run htop:
+		Run htop:
 
    			htop
 
 	11. Automate Tasks with Cron
 			
    			crontab -e
-	List cron jobs:
+		List cron jobs:
 
 			crontab -l
 
@@ -83,13 +83,13 @@
   			sudo update-grub
 
 	13. Create a System Snapshot (with Timeshift)
-	Install Timeshift:
+		Install Timeshift:
 		
   			sudo apt install timeshift
 
-	Run Timeshift:
+		Run Timeshift:
 
-		sudo timeshift-launcher
+			sudo timeshift-launcher
 
 	13. Backup and Restore Configuration
 		
