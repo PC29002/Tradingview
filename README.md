@@ -122,9 +122,13 @@
 
 2. Webdriver Link  = https://googlechromelabs.github.io/chrome-for-testing/
 
-3. Chrome    Link  = https://www.google.com/chrome/?platform=linux  
-   
-4. selenium     =   
+3. Chrome    Link  = https://www.google.com/chrome/?platform=linux
+
+			cd ~/Downloads
+   			sudo dpkg -i google-chrome-stable_current_amd64.deb
+			sudo apt-get install -f
+
+5. selenium     =   
 
 		pip install selenium
    		pip install webdriver-manager
