@@ -134,3 +134,4 @@
    		pip install webdriver-manager
    		pip install MetaTrader5
    		
+m4^&5d:8eA7u
