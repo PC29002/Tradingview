@@ -73,14 +73,16 @@
 		sudo timeshift-launcher
 
 	13. Backup and Restore Configuration
-		git init
+		
+  		git init
 		git add .bashrc .vimrc
 		git commit -m "Initial backup of dotfiles"
 		git remote add origin [repository-url]
 		git push -u origin master
 
 	14. Reboot the System
-		sudo reboot
+		
+  		sudo reboot
 	
 	15. Apps From Store 
 		(a) VLC 
