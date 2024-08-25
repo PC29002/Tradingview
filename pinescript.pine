@@ -1427,16 +1427,23 @@ alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Ale
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-// Smoot ashi EMA Triangle + Dynamic S-P
+// Smoot ashi EMA Triangle + Dynamic S-P + Regression 
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
 //@version=5
 indicator(title="Smoot ashi EMA Triangle + Dynamic S-P",max_bars_back=1000)
 
-//------------------------------------------------------------------------------
-// Settings
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------}
+//Settings
+//-----------------------------------------------------------------------------{
+
+//Lenghts for Regression
+degree = 3
+mult = 2
+tf = "1D"
+show = false
+src = close
 
 // Input lengths for EMA Triangle 
 len = 1
@@ -1450,17 +1457,32 @@ leftBars = 15
 rightBars = 15
 
 // Input lengths for HyperTrend
-mult = 5
+multh = 5
 slope = 15
 width = 80
 bullCss = #00ff00
 bearCss = #ff0000
 tempCss = #00000000
+//-----------------------------------------------------------------------------}
 
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------}
+//Define variables
+//-----------------------------------------------------------------------------{
+var coefficients = matrix.new<float>(degree + 1, 1)
+var b            = matrix.new<float>(0, 0)
+
+var float out = na
+var sse = 0.
+var k   = 0.
+
+n = bar_index
+dt = timeframe.change(tf)
+//-----------------------------------------------------------------------------}
+
+//------------------------------------------------------------------------------}
 // Calculation
-//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------{
 
 //EMA Triangle (1)
 
@@ -1537,84 +1559,9 @@ var float avg = close
 var float hold = 0.
 var float os = 1.
 
-atr = nz(ta.atr(200)) * mult
+atr = nz(ta.atr(200)) * multh
 
-avg := math.abs(close - avg) > atr ? math.avg(close, avg) : avg + os * (hold / mult / slope)
-
-os := math.sign(avg - avg[1])
-hold := os != os[1] ? atr : hold
-
-var color lineColor = na
-
-// Update the line color only when there's a change in the direction (trend)
-if os == 1 and os[1] != 1
-    lineColor := bullCss
-else if os == -1 and os[1] != -1
-    lineColor := bearCss
-else
-    lineColor := lineColor[1] 
-
-
-//------------------------------------------------------------------------------
-// Plots
-//------------------------------------------------------------------------------
-
-// Plotting the line with dynamic color and Heiken Ashi candles and Plot trend change shapes
-
-//plot S-P(1)
-plot(lastLevel, color=levelColor, linewidth=3, title='S&R Line', offset=-rightBars, style = plot.style_linebr)
-
-//plot Candle(2)
-//plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
-
-////plot EMA Tiangle(3)
-plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=bullCss, size=size.small, title="Bullish Trend Change")
-plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearCss, size=size.small, title="Bearish Trend Change")
-plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=tempCss, size=size.small, title="Bullish State")
-plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=tempCss, size=size.small, title="Bearish State")
-
-//plot HyperTrend(4)
-plot(avg, "Average", color=lineColor, linewidth=2)
-
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-
-// HyperTrend Lib
-
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-
-//@version=5
-indicator("HyperTrend Lib", "LuxAlgo - HyperTrend", overlay = true)
-
-//------------------------------------------------------------------------------
-// Settings
-//------------------------------------------------------------------------------
-
-mult = 5
-slope = 15
-width = 80
-
-// Style
-bullCss = #00ff00
-bearCss = #ff0000
-
-//------------------------------------------------------------------------------
-// Calculation
-//------------------------------------------------------------------------------
-
-var float avg = close
-var float hold = 0.
-var float os = 1.
-
-atr = nz(ta.atr(200)) * mult
-
-avg := math.abs(close - avg) > atr ? math.avg(close, avg) : avg + os * (hold / mult / slope)
+avg := math.abs(close - avg) > atr ? math.avg(close, avg) : avg + os * (hold / multh / slope)
 
 os := math.sign(avg - avg[1])
 hold := os != os[1] ? atr : hold
@@ -1629,12 +1576,95 @@ else if os == -1 and os[1] != -1
 else
     lineColor := lineColor[1] // Continue the previous color
 
-//------------------------------------------------------------------------------
-// Plots
-//------------------------------------------------------------------------------
+//Regression (4)
+//-----------------------------------------------------------------------------}
+//Request future prices
+//-----------------------------------------------------------------------------{
+y = request.security(syminfo.tickerid
+  , tf
+  , request.security_lower_tf(syminfo.tickerid, timeframe.period, src)
+  , lookahead = barmerge.lookahead_on)
 
+K = array.size(y)
+//-----------------------------------------------------------------------------}
+
+//-----------------------------------------------------------------------------}
+//Compute polynomial regression point and intervals
+//-----------------------------------------------------------------------------{
+
+//Solve system
+if dt and K > 1
+    design = matrix.new<float>(0, 0)
+    response = matrix.new<float>(0, 0)
+    
+    for i = 0 to degree
+        column = array.new_float(0)
+        
+        for j = 0 to K - 1
+            array.push(column, math.pow(j,i))
+        
+        matrix.add_col(design, i, column)
+        
+    a = matrix.inv(matrix.mult(matrix.transpose(design), design))
+    b := matrix.mult(a, matrix.transpose(design))
+
+    matrix.add_col(response, 0, y)
+    
+    coefficients := matrix.mult(b, response)
+    
+    sse := 0
+    for i = 0 to K - 1
+        y_ = 0.
+        for j = 0 to degree
+            y_ += math.pow(i, j)*matrix.get(coefficients, j, 0)
+        
+        sse += math.pow(array.get(y, i) - y_, 2)
+    
+    sse := math.sqrt(sse / (K - 1)) * mult
+    
+    k := 0
+
+//Compute best fit and upper/lower intervals
+reg = 0.
+for i = 0 to degree
+    reg += math.pow(k, i)*matrix.get(coefficients, i, 0)
+
+if barstate.isrealtime
+    if show
+        out := reg
+else
+    out := reg
+    
+k += 1
+css = dt ? na : out > out[1] ? #00ff00 : #ff0000
+//-----------------------------------------------------------------------------}
+
+
+//-----------------------------------------------------------------------------}
+//Plot
+//-----------------------------------------------------------------------------{
+
+// Plotting the line with dynamic color and Heiken Ashi candles and Plot trend change shapes
+
+//Plot Regression Line
+plot(out, "PolyReg", color = css, style = plot.style_linebr, linewidth = 3)
+
+//plot S-P(1)
+plot(lastLevel, color=levelColor, linewidth=3, title='S&R Line', offset=-rightBars, style = plot.style_linebr)
+
+//plot HyperTrend(4)
 plot(avg, "Average", color=lineColor, linewidth=2)
 
+//plot Candle(2)
+//plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
+
+////plot EMA Tiangle(3)
+plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=bullCss, size=size.small, title="Bullish Trend Change")
+plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearCss, size=size.small, title="Bearish Trend Change")
+plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=tempCss, size=size.small, title="Bullish State")
+plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=tempCss, size=size.small, title="Bearish State")
+
+//-----------------------------------------------------------------------------}
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
@@ -1642,3 +1672,6 @@ plot(avg, "Average", color=lineColor, linewidth=2)
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+
+
+
