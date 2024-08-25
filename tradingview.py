@@ -12,8 +12,8 @@ class tradingview_main():
         
         option = webdriver.ChromeOptions()
         option.add_experimental_option("detach",True)
-        option.add_argument("--headless")
-        self.driver = webdriver.Chrome(service=Service('E:\\VS code\\Projects\\Seleium\\Selenium 3 Elements\\chromedriver.exe'), options=option)
+        #option.add_argument("--headless")
+        self.driver = webdriver.Chrome(service=Service('chromedriver.exe'), options=option)
 
     
     def loadcookie(self):
@@ -57,33 +57,38 @@ class tradingview_main():
         # EFmus
         time.sleep(5)    
 
-        # 1 EMA Triangle and SuperTrend Cross
-        #BASE Indicator
-        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
-        EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
+        # 1 EMA Triangle and SuperTrend Cross    
         
-        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
-        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex      
-        
+        # Regression 
+        regression    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        regressionhex = Color.from_string(regression).hex 
+    
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
         SuppReshex = Color.from_string(SuppRes).hex    
         
-        
         #HyperTrend
-        hypertrend    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
+        hypertrend    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
         hypertrendhex = Color.from_string(hypertrend).hex 
         
+        #BASE Indicator
+        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[4]/div").value_of_css_property("color")
+        EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
+        
+        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[5]/div").value_of_css_property("color")
+        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
+        
+        
         print("BTCUSD =>")
-        print("Signal  :", EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex]
+        print("Signal  :", EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex, regressionhex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, hypertrendhex, regressionhex]
         
     def color_ident_btc(self):
         
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_btcusd
         
-        if  (b[0] == b[2] == b[3] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == b[4] == "#00ff00"):
             #print("BTC Green")
             unit = "BTC Green"
 
@@ -95,7 +100,7 @@ class tradingview_main():
             #print('BTC Green')
         #    unit = "BTC Green"
         
-        elif (b[1] == b[2] == b[3] == "#ff0000"):
+        elif (b[1] == b[2] == b[3]  == b[4]  == "#ff0000"):
             #print("BTC Red")
             unit = "BTC Red"
 
@@ -166,3 +171,5 @@ def test():
     z = tradingview_main()
     
     print(z.run_uscap())
+
+
