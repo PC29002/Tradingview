@@ -13,5 +13,7 @@
    		pip install pandas
    		pip install nump<2
    		pip install --upgrade MetaTrader5
+   		pip install telebot
+   		pip install schedule
 
 6. MetaTrader5 = https://www.metatrader5.com/en/download 
