@@ -11,5 +11,7 @@
    		pip install webdriver-manager
    		pip install MetaTrader5
    		pip install pandas
+   		pip install nump<2
+   		pip install --upgrade MetaTrader5
 
-5. MetaTrader5 = https://www.metatrader5.com/en/download 
+6. MetaTrader5 = https://www.metatrader5.com/en/download 
