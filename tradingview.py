@@ -177,7 +177,3 @@ def test():
     print(z.run_uscap())
 
 
-z = tradingview_main()
-z.selenium()
-z.usecookie()
-z.chart_btcusd()
