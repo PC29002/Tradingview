@@ -43,7 +43,7 @@ a = TeleMain()
 
 ########################
 
-import MT5, schedule, time, tradingview, telebot 
+import MT5, schedule, time, tradingview, telebot, sys, os 
 from datetime import datetime, timedelta
 
 
@@ -58,22 +58,15 @@ class TeleMain:
         self.running = False
     
     def ist_to_utc(self):
-        # Get the current IST time
+
         ist_time_str = datetime.now().strftime('%H:%M:%S')
-    
-        # Define the IST time zone offset (+5:30 hours from UTC)
+
         ist_offset = timedelta(hours=5, minutes=30)
-
-        # Parse the input string to a datetime object
         ist_time = datetime.strptime(ist_time_str, '%H:%M:%S')
-
-        # Subtract the IST offset to get UTC time
         utc_time = ist_time - ist_offset
 
-        # Format the UTC time as a string
         utc_time_str = utc_time.strftime('%H:%M:%S')
-
-        # Return the UTC time as a formatted string
+        
         return f"IST Time: {ist_time_str} -> UTC Time: {utc_time_str}"
     
     
@@ -200,18 +193,32 @@ class TeleMain_schedule():
             time.sleep(1)
 
 
-class tele_main_commands():
+class tele_main_commands:
     
     def __init__(self):
-        
         self.teleschedule = TeleMain()
+    
+    def command_info(self):
+        
+        @self.teleschedule.bot.message_handler(commands=['help'])
+        def send_help(message):
+            help_messages = [
+                'pro -> Receives Total Profit Amount',
+                'gord -> Gets Current no of Orders',
+                'cord -> Close all Opened Positions'
+            ]
+            for i in help_messages:
+                #self.teleschedule.bot.send_message(5626388450, i) 
+                self.teleschedule.bot.send_message(-1002242173955, i)# Using self.teleschedule.bot instead of self.bot
+                print(i)
     
     def check_profit(self):
         @self.teleschedule.bot.message_handler(commands=['pro'])
         def send_profit(message):
+            
             profit = self.teleschedule.mt.profit()
             self.teleschedule.bot.send_message(-1002242173955, profit)
-            #self.bot.send_message(-1002242173955, profit)   
+            #self.teleschedule.bot.send_message(5626388450, profit)
             
             self.teleschedule.mt.shutdown()
 
@@ -219,39 +226,42 @@ class tele_main_commands():
         
         @self.teleschedule.bot.message_handler(commands=['gord'])
         def send_order(message):
+            
             order = self.teleschedule.mt.total_order()
             self.teleschedule.bot.send_message(-1002242173955, order)
-            #self.bot.send_message(-1002242173955, order)          
+            #self.teleschedule.bot.send_message(5626388450, order)          
             
             self.teleschedule.mt.shutdown()
     
     def close_positions(self):
-        @self.teleschedule.bot.message_handler(commands=['cpos'])
+        @self.teleschedule.bot.message_handler(commands=['cord'])
         def send_positions(message):
+            
             position = self.teleschedule.mt.close_positions()
             self.teleschedule.bot.send_message(-1002242173955, position)
-            #self.bot.send_message(-1002242173955, order)          
+            #self.teleschedule.bot.send_message(5626388450, position)          
             
             self.teleschedule.mt.shutdown()
-        
     
-    def command_info(self):
-        
-        @self.teleschedule.bot.message_handler(commands=['help'])
-        def send_help(message):
+    def stop_script(self):
+        @self.teleschedule.bot.message_handler(commands=['sspr'])
+        def stop_script(message):
             
-            help = ['pro -> Receives Total Profit Amount','gord -> Gets Current no of Orders','cpos -> Close all Opened Positions']
-            for i in help:
-                self.teleschedule.bot.send_message(-1002242173955,i)
-                print(i)
+            #self.teleschedule.bot.send_message(-1002242173955,"Stopping the script")
+            self.teleschedule.bot.send_message(5626388450, "Stopping the script")          
+            print("Stopping the script")
+            sys.exit()
+            
     
     def start_run(self):
         
         try:
             
+            self.command_info()
             self.check_profit() 
             self.get_total_order()
-            self.command_info()
+            self.close_positions()
+            
         
         except Exception as e:
             
@@ -266,7 +276,8 @@ class tele_main_commands():
 #TeleMain().temp()
 #TeleMain().run_us()
 
-import threading 
+
+"""import threading 
 
 a = TeleMain_schedule()
 b = tele_main_commands()
@@ -279,4 +290,4 @@ thread_b.start()
 
 thread_a.join()
 thread_b.join()
-
+"""
