@@ -55,32 +55,17 @@ class TeleMain:
         token = "6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI"
         self.bot = telebot.TeleBot(token)
         self.mt = MT5.mt5()
-        self.running = False
-    
-    def ist_to_utc(self):
-
-        ist_time_str = datetime.now().strftime('%H:%M:%S')
-
-        ist_offset = timedelta(hours=5, minutes=30)
-        ist_time = datetime.strptime(ist_time_str, '%H:%M:%S')
-        utc_time = ist_time - ist_offset
-
-        utc_time_str = utc_time.strftime('%H:%M:%S')
-        
-        return f"IST Time: {ist_time_str} -> UTC Time: {utc_time_str}"
-    
+        self.running = False 
     
     def run_us(self):
         
         print("\nBot has started")
         us = self.tr.run_uscap()
-        timeinfo = None 
-
+        
         for i in us:
             if i != "avoid":
-                if timeinfo is None:
-                    timeinfo = self.ist_to_utc()
-                    print(timeinfo)
+                self.bot.send_message(-1002242173955,i)
+                #self.bot.send_message(5626388450, i)
                 print(i)
                 
             
@@ -96,7 +81,7 @@ class TeleMain:
                 #print(a)
                     
         else:
-            print("Avoid")
+            pass
         
     def temp(self):
         
@@ -277,7 +262,7 @@ class tele_main_commands:
 ###############################     ###############################     ###############################     ###############################     ###############################     ###############################
 
 #TeleMain().temp()
-#TeleMain().run_us()
+TeleMain().run_us()
 
 
 """import threading 
