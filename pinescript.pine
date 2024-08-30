@@ -6,102 +6,43 @@
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-//Multi Kernel Regression Lib
+//MACD Lib
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
 //@version=5
-indicator("Multi Kernel Regression", overlay = false, max_lines_count = 500, max_bars_back = 500, max_labels_count = 500)
+indicator(title="MACD", overlay=false)
+source = close
+useCurrentRes = true
+resCustom = input.timeframe(title="Use Different Timeframe? Uncheck Box Above", defval="60")
+smd = true
+sd = true
+sh = true
+macd_colorChange = true
+hist_colorChange = true
+fastLength = 12
+slowLength = 26
+signalLength = 9
 
-kernel        = "Laplace"
-bandwidth     = 14
-source        = close
-deviations    = 2.0
-bullish_color = #00ff00
-bearish_color = #ff0000
-repaint       = true
+res = useCurrentRes ? timeframe.period : resCustom
 
-// Precalculate Math
-sq(source) => math.pow(source, 2)
+fastMA = ta.ema(source, fastLength)
+slowMA = ta.ema(source, slowLength)
 
-laplace(source, bandwidth) =>
-    (1 / (2 * bandwidth)) * math.exp(-math.abs(source / bandwidth))
+macd = fastMA - slowMA
+signal = ta.sma(macd, signalLength)
 
-kernel(source, bandwidth) => laplace(source, bandwidth)
+// Non-repainting MTF approach
+[mtfMacd, mtfSignal] = request.security(syminfo.tickerid, res, [macd, signal], lookahead=barmerge.lookahead_off)
 
-type coefficients
-    float[] weights
-    float sumw
+// MacD Color Definitions
+macd_IsAbove = mtfMacd >= mtfSignal
+macd_IsBelow = mtfMacd < mtfSignal
 
-// Precalculate bandwidth
-precalculate(float bandwidth) =>
-    var coefficients[] c = array.new<coefficients>()
-    if barstate.isfirst
-        for i = 0 to 499
-            coefficients w = coefficients.new(array.new<float>(), 0)
-            float sumw = 0
+macd_color = macd_colorChange ? (macd_IsAbove ? #00ff00 : #ff0000) : #ff0000
 
-            for j = 0 to 499
-                diff = i - j
-                weight = kernel(diff, bandwidth)
-                sumw += weight
-                w.weights.push(weight)
+plot(smd and not na(mtfMacd) ? mtfMacd : na, title="MACD", color=macd_color, linewidth=4)
 
-            w.sumw := sumw
-            c.push(w)
-    c
-
-// Start of the main script
-var estimate_array = array.new<line>(500, na)
-float current_price = na
-float previous_price = na
-var line estimate = na
-
-// Array to store plotted values
-var float[] plotted_values = array.new_float(500, na)
-var color[] value_colors = array.new_color(500, na) // Array to store colors for plotting
-
-if repaint
-    coefficients[] c = precalculate(bandwidth)
-    if barstate.isfirst
-        for i = 0 to 499
-            array.set(estimate_array, i, na)
-            array.set(plotted_values, i, na)
-            array.set(value_colors, i, na)
-
-    if barstate.islast
-        for i = 0 to math.min(bar_index, 499)
-            coefficient = c.get(i)
-            float sum = 0
-            float sumsq = 0
-
-            for j = 0 to math.min(bar_index, 499)
-                diff = i - j
-                weight = coefficient.weights.get(j)
-                sum += source[j] * weight
-                sumsq += sq(source[j]) * weight
-
-            current_price := sum / coefficient.sumw
-            delta = current_price - previous_price
-
-            // Store current price and color in arrays for plotting
-            color plot_color = (current_price > previous_price ? bullish_color : bearish_color)
-            array.set(plotted_values, i, current_price)
-            array.set(value_colors, i, plot_color)
-
-            estimate := array.get(estimate_array, i)
-            if na(estimate)
-                estimate := line.new(na, na, na, na, color= plot_color , width=2)
-                array.set(estimate_array, i, estimate)
-
-            line.set_xy1(estimate, bar_index - i + 1, previous_price)
-            line.set_xy2(estimate, bar_index - i, current_price)
-            line.set_color(estimate, plot_color)
-            
-            previous_price := current_price
-
-// Plotting the numeric values with color based on trend
-plot(series=(bar_index >= 0 ? array.get(plotted_values, bar_index % 500) : na), color=(bar_index >= 0 ? array.get(value_colors, bar_index % 500) : na), title="Regression Values")
 
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
@@ -164,7 +105,7 @@ EMA triangle Symbol Lib
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator(title="EMA triangle Lib", overlay=true)
+indicator(title="EMA triangle", overlay=true)
 
 // Input lengths
 len = input(1, title="Length for smoothing")
@@ -253,7 +194,7 @@ RSI Candle Lib
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator("RSI Candle Lib", overlay=false)
+indicator("RSI Candle", overlay=false)
 
 import lastguru/DominantCycle/2 as d
 
@@ -372,7 +313,7 @@ SuperTrend Lib
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator(title="supertrend Lib", overlay = false)
+indicator(title="supertrend", overlay = false)
 
 //Input Parameters
 period_ = 14
@@ -718,7 +659,7 @@ plotshape(rsiSupertrend, color = trendDirection == -1 ? colorUp : colorDown, tit
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
 //@version=5
-indicator("HyperTrend Lib", "LuxAlgo - HyperTrend", overlay = true)
+indicator("HyperTrend", "LuxAlgo - HyperTrend", overlay = true)
 
 //------------------------------------------------------------------------------
 // Settings
@@ -770,6 +711,112 @@ plot(avg, "Average", color=lineColor, linewidth=2)
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+
+// Non-Repainting Regression Line Lib
+
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+
+//@version=5
+indicator("Regression Line", overlay = true)
+
+//-----------------------------------------------------------------------------
+// Settings
+//-----------------------------------------------------------------------------
+degree = 3
+mult = 2
+tf = "1D"
+show = false
+src = close
+
+//-----------------------------------------------------------------------------
+// Define variables
+//-----------------------------------------------------------------------------
+var coefficients = matrix.new<float>(degree + 1, 1)
+var b            = matrix.new<float>(0, 0)
+
+var float out = na
+var sse = 0.
+var k   = 0.
+
+n = bar_index
+dt = timeframe.change(tf)
+
+//-----------------------------------------------------------------------------
+// Request historical prices (Non-repainting)
+//-----------------------------------------------------------------------------
+y = request.security(syminfo.tickerid
+  , tf
+  , request.security_lower_tf(syminfo.tickerid, timeframe.period, src)
+  , lookahead = barmerge.lookahead_off)  // Changed to lookahead_off
+
+K = array.size(y)
+
+//-----------------------------------------------------------------------------
+// Compute polynomial regression point and intervals
+//-----------------------------------------------------------------------------
+
+if (dt and K > 1)
+    design = matrix.new<float>(0, 0)
+    response = matrix.new<float>(0, 0)
+    
+    for i = 0 to degree
+        column = array.new_float(0)
+        
+        for j = 0 to K - 1
+            array.push(column, math.pow(j, i))
+        
+        matrix.add_col(design, i, column)
+        
+    a = matrix.inv(matrix.mult(matrix.transpose(design), design))
+    b := matrix.mult(a, matrix.transpose(design))
+
+    matrix.add_col(response, 0, y)
+    
+    coefficients := matrix.mult(b, response)
+    
+    sse := 0
+    for i = 0 to K - 1
+        y_ = 0.
+        for j = 0 to degree
+            y_ += math.pow(i, j) * matrix.get(coefficients, j, 0)
+        
+        sse += math.pow(array.get(y, i) - y_, 2)
+    
+    sse := math.sqrt(sse / (K - 1)) * mult
+    
+    k := 0
+
+// Compute best fit and upper/lower intervals
+reg = 0.
+for i = 0 to degree
+    reg += math.pow(k, i) * matrix.get(coefficients, i, 0)
+
+if not barstate.isrealtime
+    out := reg
+
+k += 1
+
+//-----------------------------------------------------------------------------
+// Plot
+//-----------------------------------------------------------------------------
+css = dt ? na : out > out[1] ? #00ff00 : #ff0000
+
+plot(out, "PolyReg", color = css, style = plot.style_linebr, linewidth = 3)
+
+
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
@@ -1427,7 +1474,7 @@ alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Ale
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-// Smoot ashi EMA Triangle + Dynamic S-P + Regression 
+// Smoot ashi EMA Triangle + Dynamic S-P + MACD
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
@@ -1438,53 +1485,44 @@ indicator(title="Smoot ashi EMA Triangle + Dynamic S-P",max_bars_back=1000)
 //Settings
 //-----------------------------------------------------------------------------{
 
-//Lenghts for Regression
-degree = 3
-mult = 2
-tf = "1D"
-show = false
-src = close
-
 // Input lengths for EMA Triangle 
 len = 1
 len_ha = 1
-len1 = 21
-len2 = 34
-len3 = 50
+l1 = 21
+l2 = 34
+l3 = 55
 
 // Input lengths for S-P
 leftBars = 15
 rightBars = 15
 
-// Input lengths for HyperTrend
-multh = 5
-slope = 15
-width = 80
-bullCss = #00ff00
-bearCss = #ff0000
-tempCss = #00000000
+//Input Lenghts for MACD
+source = close
+useCurrentRes = true
+resCustom = input.timeframe(title="Use Different Timeframe? Uncheck Box Above", defval="60")
+smd = true
+sd = true
+sh = true
+macd_colorChange = true
+hist_colorChange = true
+fastLength = 12
+slowLength = 26
+signalLength = 9
+
 //-----------------------------------------------------------------------------}
+
 
 
 //-----------------------------------------------------------------------------}
 //Define variables
 //-----------------------------------------------------------------------------{
-var coefficients = matrix.new<float>(degree + 1, 1)
-var b            = matrix.new<float>(0, 0)
 
-var float out = na
-var sse = 0.
-var k   = 0.
+// EMA Traingle (1)
 
-n = bar_index
-dt = timeframe.change(tf)
-//-----------------------------------------------------------------------------}
-
-//------------------------------------------------------------------------------}
-// Calculation
-//------------------------------------------------------------------------------{
-
-//EMA Triangle (1)
+//Color 
+bullCss  = #00ff00
+bearCss  = #ff0000
+tempCss  = #00000000
 
 // Calculate Heiken Ashi candles
 o = ta.ema(open, len)
@@ -1503,12 +1541,20 @@ smooth_ha_open = ta.ema(haopen, len_ha)
 smooth_ha_close = ta.ema(haclose, len_ha)
 smooth_ha_high = ta.ema(hahigh, len_ha)
 smooth_ha_low = ta.ema(halow, len_ha)
+//-----------------------------------------------------------------------------}
+
+
+//------------------------------------------------------------------------------}
+// Calculation
+//------------------------------------------------------------------------------{
+
+//EMA Triangle (1)
 
 // Calculate EMA trends
 EMA0 = ta.ema(smooth_ha_close, 1)
-EMA1 = ta.ema(smooth_ha_close, len1)
-EMA2 = ta.ema(smooth_ha_close, len2)
-EMA3 = ta.ema(smooth_ha_close, len3)
+EMA1 = ta.ema(smooth_ha_close, l1)
+EMA2 = ta.ema(smooth_ha_close, l2)
+EMA3 = ta.ema(smooth_ha_close, l3)
 
 // Define bullish and bearish conditions
 Bull1 = EMA1 < EMA0
@@ -1534,8 +1580,8 @@ trendChangeBearish = na(prevBearish) ? false : (not prevBearish and bearish)
 prevBullish := bullish
 prevBearish := bearish
 
-
 //S-P (2)
+
 // Calculate pivots
 highPivot = ta.pivothigh(leftBars, rightBars)
 lowPivot = ta.pivotlow(leftBars, rightBars)
@@ -1547,96 +1593,31 @@ var color levelColor = na
 // Update the level and color based on the most recent pivot
 if not na(highPivot)
     lastLevel := highPivot
-    levelColor := bearCss // Resistance level
+    levelColor := #ff0000 // Resistance level
 
 if not na(lowPivot)
     lastLevel := lowPivot
-    levelColor := bullCss // Support level
+    levelColor := #00ff00 // Support level
 
+// MACD (3)
 
-//HyoerTrend (3)
-var float avg = close
-var float hold = 0.
-var float os = 1.
+res = useCurrentRes ? timeframe.period : resCustom
 
-atr = nz(ta.atr(200)) * multh
+fastMA = ta.ema(source, fastLength)
+slowMA = ta.ema(source, slowLength)
 
-avg := math.abs(close - avg) > atr ? math.avg(close, avg) : avg + os * (hold / multh / slope)
+macd = fastMA - slowMA
+signal = ta.sma(macd, signalLength)
 
-os := math.sign(avg - avg[1])
-hold := os != os[1] ? atr : hold
+// Non-repainting MTF approach
+[mtfMacd, mtfSignal] = request.security(syminfo.tickerid, res, [macd, signal], lookahead=barmerge.lookahead_off)
 
-var color lineColor = na
+// MacD Color Definitions
+macd_IsAbove = mtfMacd >= mtfSignal
+macd_IsBelow = mtfMacd < mtfSignal
 
-// Update the line color only when there's a change in the direction (trend)
-if os == 1 and os[1] != 1
-    lineColor := bullCss
-else if os == -1 and os[1] != -1
-    lineColor := bearCss
-else
-    lineColor := lineColor[1] // Continue the previous color
+macd_color = macd_colorChange ? (macd_IsAbove ? bullCss : bearCss) : bearCss
 
-//Regression (4)
-//-----------------------------------------------------------------------------}
-//Request future prices
-//-----------------------------------------------------------------------------{
-y = request.security(syminfo.tickerid
-  , tf
-  , request.security_lower_tf(syminfo.tickerid, timeframe.period, src)
-  , lookahead = barmerge.lookahead_on)
-
-K = array.size(y)
-//-----------------------------------------------------------------------------}
-
-//-----------------------------------------------------------------------------}
-//Compute polynomial regression point and intervals
-//-----------------------------------------------------------------------------{
-
-//Solve system
-if dt and K > 1
-    design = matrix.new<float>(0, 0)
-    response = matrix.new<float>(0, 0)
-    
-    for i = 0 to degree
-        column = array.new_float(0)
-        
-        for j = 0 to K - 1
-            array.push(column, math.pow(j,i))
-        
-        matrix.add_col(design, i, column)
-        
-    a = matrix.inv(matrix.mult(matrix.transpose(design), design))
-    b := matrix.mult(a, matrix.transpose(design))
-
-    matrix.add_col(response, 0, y)
-    
-    coefficients := matrix.mult(b, response)
-    
-    sse := 0
-    for i = 0 to K - 1
-        y_ = 0.
-        for j = 0 to degree
-            y_ += math.pow(i, j)*matrix.get(coefficients, j, 0)
-        
-        sse += math.pow(array.get(y, i) - y_, 2)
-    
-    sse := math.sqrt(sse / (K - 1)) * mult
-    
-    k := 0
-
-//Compute best fit and upper/lower intervals
-reg = 0.
-for i = 0 to degree
-    reg += math.pow(k, i)*matrix.get(coefficients, i, 0)
-
-if barstate.isrealtime
-    if show
-        out := reg
-else
-    out := reg
-    
-k += 1
-css = dt ? na : out > out[1] ? #00ff00 : #ff0000
 //-----------------------------------------------------------------------------}
 
 
@@ -1646,19 +1627,16 @@ css = dt ? na : out > out[1] ? #00ff00 : #ff0000
 
 // Plotting the line with dynamic color and Heiken Ashi candles and Plot trend change shapes
 
-//Plot Regression Line
-plot(out, "PolyReg", color = css, style = plot.style_linebr, linewidth = 3)
-
 //plot S-P(1)
 plot(lastLevel, color=levelColor, linewidth=3, title='S&R Line', offset=-rightBars, style = plot.style_linebr)
-
-//plot HyperTrend(4)
-plot(avg, "Average", color=lineColor, linewidth=2)
 
 //plot Candle(2)
 //plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
 
-////plot EMA Tiangle(3)
+// plot macd (3)
+plot(smd and not na(mtfMacd) ? mtfMacd : na, title="MACD", color=macd_color, linewidth=4, style = plot.style_linebr)
+
+////plot EMA Tiangle(4)
 plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=bullCss, size=size.small, title="Bullish Trend Change")
 plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearCss, size=size.small, title="Bearish Trend Change")
 plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=tempCss, size=size.small, title="Bullish State")
