@@ -74,14 +74,17 @@ class TeleMain:
         
         print("\nBot has started")
         us = self.tr.run_uscap()
-        timeinfo = self.ist_to_utc()
-        
-        if not 'avoid' in us:
-            self.bot.send_message(-1002242173955,us)
-            self.bot.send_message(-1002242173955,timeinfo)
-            print(us, timeinfo)
+        timeinfo = None 
+
+        for i in us:
+            if i != "avoid":
+                if timeinfo is None:
+                    timeinfo = self.ist_to_utc()
+                    print(timeinfo)
+                print(i)
+                
             
-        time.sleep(40)
+        time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
@@ -274,7 +277,7 @@ class tele_main_commands:
 ###############################     ###############################     ###############################     ###############################     ###############################     ###############################
 
 #TeleMain().temp()
-#TeleMain().run_us()
+TeleMain().run_us()
 
 
 """import threading 
