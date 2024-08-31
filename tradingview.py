@@ -133,8 +133,8 @@ class tradingview_main():
         
         
         print("ETHUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_ethusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_ethusd(self):
         
@@ -173,6 +173,10 @@ class tradingview_main():
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
@@ -182,8 +186,8 @@ class tradingview_main():
         
         
         print("XAUUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_xauusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_xauusd(self):
         
@@ -223,6 +227,10 @@ class tradingview_main():
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
@@ -232,8 +240,8 @@ class tradingview_main():
         
         
         print("BGPJYP =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_bgpjyp = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_bgpjyp(self):
         
@@ -272,6 +280,10 @@ class tradingview_main():
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
@@ -281,8 +293,8 @@ class tradingview_main():
         
         
         print("OIL =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_oil = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_oil(self):
         
@@ -321,6 +333,10 @@ class tradingview_main():
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
@@ -330,8 +346,8 @@ class tradingview_main():
         
         
         print("AUDNZD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_audnzd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_audnzd(self):
         
@@ -428,8 +444,3 @@ def test():
     print(z.run_crypto())
 
 
-z = tradingview_main()
-z.selenium()
-z.usecookie()
-
-z.chart_btcusd()
