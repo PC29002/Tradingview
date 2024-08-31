@@ -64,11 +64,35 @@ class TeleMain:
         
         for i in us:
             if i != "avoid":
-                self.bot.send_message(-1002242173955,i)
-                #self.bot.send_message(5626388450, i)
+                #self.bot.send_message(-1002242173955,i)
+                self.bot.send_message(5626388450, i)
                 print(i)
-                
+                    
+        time.sleep(25)
+        if 'BTC Green' in us:
+                self.mt.buy_btc_order()
+                #print("self.bot.send_message(-1002242173955,us)")
+                #print(a)
             
+        elif 'BTC Red' in us:
+                self.mt.sell_btc_order()
+                #print("self.bot.send_message(-1002242173955,us)")
+                #print(a)
+                    
+        else:
+            pass
+    
+    def run_crypto(self):
+        
+        print("\nBot has started")
+        us = self.tr.run_crypto()
+        
+        for i in us:
+            if i != "avoid":
+                #self.bot.send_message(-1002242173955,i)
+                self.bot.send_message(5626388450, i)
+                print(i)
+                    
         time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
@@ -142,44 +166,53 @@ class TeleMain_schedule():
         except Exception as e:
         
             print(f"An error occurred: {e}")
-            #telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(-1002242173955,e)
+            telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(5626388450,e)
             self.teleschedule.stop()
     
-    # Scheduling for 12:00 AM to 11:30 PM, Monday to Friday
+    def schedule_bot_crypto(self):
+        
+        try:
+    
+            self.teleschedule.run_crypto()
+            self.teleschedule.stop()
+    
+        except Exception as e:
+        
+            print(f"An error occurred: {e}")
+            telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(5626388450,e)
+            self.teleschedule.stop()
+    
     def schedule_us(self):
     
-        for hour in range(24):  # from 00:00 to 23:00
-    
-            for minute in [4, 34]:  # every 30 minutes
+        for hour in range(24): 
             
-                time_str = f"{hour:02d}:{minute:02d}"
-            
-                # Scheduling tasks
-            
+            for minute in [4, 34]:
+                time_str = f"{hour:02d}:{minute:02d}"   
+                
                 schedule.every().monday.at(time_str).do(self.schedule_bot_us)
-
                 schedule.every().tuesday.at(time_str).do(self.schedule_bot_us)
-            
                 schedule.every().wednesday.at(time_str).do(self.schedule_bot_us)
-            
                 schedule.every().thursday.at(time_str).do(self.schedule_bot_us)
-            
                 schedule.every().friday.at(time_str).do(self.schedule_bot_us)
-                
-                schedule.every().saturday.at(time_str).do(self.schedule_bot_us)
-                
-                schedule.every().sunday.at(time_str).do(self.schedule_bot_us)
+    
+    def schedule_crypto(self):
+        
+        for hour in range(24):
+            for minute in [4, 34]:
+        
+                time_str = f"{hour:02d}:{minute:02d}"
+                schedule.every().saturday.at(time_str).do(self.schedule_bot_crypto)
+                schedule.every().sunday.at(time_str).do(self.schedule_bot_crypto)
     
     def run(self):
         
         print(time.ctime(time.time()))
         self.schedule_us()
+        self.schedule_crypto()  
         
         while True:
-            
             schedule.run_pending()
             time.sleep(1)
-
 
 class tele_main_commands:
     
@@ -197,7 +230,7 @@ class tele_main_commands:
             ]
             for i in help_messages:
                 #self.teleschedule.bot.send_message(5626388450, i) 
-                self.teleschedule.bot.send_message(-1002242173955, i)# Using self.teleschedule.bot instead of self.bot
+                self.teleschedule.bot.send_message(-1002242173955, i)
                 print(i)
     
     def check_profit(self):
@@ -262,10 +295,10 @@ class tele_main_commands:
 ###############################     ###############################     ###############################     ###############################     ###############################     ###############################
 
 #TeleMain().temp()
-TeleMain().run_us()
+#TeleMain().run_us()
 
 
-"""import threading 
+import threading 
 
 a = TeleMain_schedule()
 b = tele_main_commands()
@@ -278,4 +311,5 @@ thread_b.start()
 
 thread_a.join()
 thread_b.join()
-"""
+
+
