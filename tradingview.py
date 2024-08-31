@@ -424,8 +424,3 @@ def test():
     print(z.run_crypto())
 
 
-z = tradingview_main()
-z.selenium()
-z.usecookie()
-
-z.chart_btcusd()
