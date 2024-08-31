@@ -12,7 +12,7 @@ class tradingview_main():
         
         option = webdriver.ChromeOptions()
         option.add_experimental_option("detach",True)
-        #option.add_argument("--headless")
+        option.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service('chromedriver.exe'), options=option)
 
     
@@ -100,6 +100,54 @@ class tradingview_main():
                 
     
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
+    def chart_ethusd(self):
+        
+        self.driver.get("https://in.tradingview.com/chart/?symbol=BINANCE%3AETHUSD")
+        
+        # EFmus
+        time.sleep(5)    
+
+        # 1 EMA Triangle and SuperTrend Cross    
+        # S-P
+        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[5]/div").value_of_css_property("color")
+        SuppReshex = Color.from_string(SuppRes).hex    
+        
+        #Macd
+        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
+        macdhex = Color.from_string(macd).hex 
+        
+        #BASE Indicator
+        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
+        
+        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
+        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
+        
+        
+        print("ETHUSD =>")
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
+        self.col_ethusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        
+    def color_ident_ethusd(self):
+        
+        # 1 EMA Triangle and SuperTrend Cross
+        b = self.col_ethusd
+        
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
+            #print("BTC Green")
+            unit = "ETHUSD Green"
+        
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
+            #print("BTC Red")
+            unit = "ETHUSD Red"
+
+        else:
+            #print("avoid")
+            unit = "avoid"
+                
+        return unit
+
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
     def chart_xauusd(self):
         
         self.driver.get("https://in.tradingview.com/chart/?symbol=FOREXCOM%3AXAUUSD")
@@ -134,11 +182,11 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_xauusd
         
-        if  (b[0] == b[2] == b[3] == b[4] == b[5] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "XAU Green"
         
-        elif (b[1] == b[2] == b[3]  == b[4] == b[5]  == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
             #print("BTC Red")
             unit = "XAU Red"
 
@@ -184,11 +232,11 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_bgpjyp
         
-        if  (b[0] == b[2] == b[3] == b[4] == b[5] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "BGPJYP Green"
         
-        elif (b[1] == b[2] == b[3]  == b[4] == b[5]  == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
             #print("BTC Red")
             unit = "BGPJYP Red"
 
@@ -233,11 +281,11 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_oil
         
-        if  (b[0] == b[2] == b[3] == b[4] == b[5] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "OIL Green"
         
-        elif (b[1] == b[2] == b[3]  == b[4] == b[5]  == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
             #print("BTC Red")
             unit = "OIL Red"
 
@@ -282,11 +330,11 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_audnzd
         
-        if  (b[0] == b[2] == b[3] == b[4] == b[5] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "AUDNZD Green"
         
-        elif (b[1] == b[2] == b[3]  == b[4] == b[5]  == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == "#ff0000"):
             #print("BTC Red")
             unit = "AUDNZD Red"
 
@@ -321,7 +369,6 @@ class tradingview_main():
             d     = self.color_ident_audnzd()
             e     = self.color_ident_oil()
         
-            #color = [a,b]
             color = [a, b, c, d, e]
             return color
         
@@ -330,6 +377,33 @@ class tradingview_main():
             print(e)
             self.driver.quit()
         
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
+    def run_crypto(self):
+        
+        try:
+            
+            print(time.ctime(time.time()))
+            self.selenium()
+            self.usecookie()
+
+            self.chart_btcusd()
+            self.chart_ethusd()
+            
+            self.driver.quit()
+            
+            a = self.color_ident_btc()
+            b = self.color_ident_ethusd()
+        
+            color = [a, b]
+            return color
+        
+        except Exception as e:
+            
+            print(e)
+            self.driver.quit()
+
+
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############
         
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
@@ -342,8 +416,6 @@ def test():
     print("\nBot has started")
     z = tradingview_main()
     
-    print(z.run_uscap())
-
-
-
+    #print(z.run_uscap())
+    print(z.run_crypto())
 
