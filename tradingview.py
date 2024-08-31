@@ -12,7 +12,7 @@ class tradingview_main():
         
         option = webdriver.ChromeOptions()
         option.add_experimental_option("detach",True)
-        option.add_argument("--headless")
+        #option.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service('chromedriver.exe'), options=option)
 
     
@@ -60,35 +60,39 @@ class tradingview_main():
 
         # 1 EMA Triangle and SuperTrend Cross    
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[5]/div").value_of_css_property("color")
+        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         SuppReshex = Color.from_string(SuppRes).hex    
         
         #Macd
-        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
+        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
-        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[4]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
         
-        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
+        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[5]/div").value_of_css_property("color")
         EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
         
         
         print("BTCUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex)
+        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex, radiushex]
         
     def color_ident_btc(self):
         
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_btcusd
         
-        if  (b[0] == b[2] == b[3] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == b[4] == "#00ff00"):
             #print("BTC Green")
             unit = "BTC Green"
         
-        elif (b[1] == b[2] == b[3] == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == b[4] == "#ff0000"):
             #print("BTC Red")
             unit = "BTC Red"
 
@@ -419,3 +423,9 @@ def test():
     #print(z.run_uscap())
     print(z.run_crypto())
 
+
+z = tradingview_main()
+z.selenium()
+z.usecookie()
+
+z.chart_btcusd()
