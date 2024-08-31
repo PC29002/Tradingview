@@ -120,6 +120,10 @@ class tradingview_main():
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex 
         
+        #Radius
+        radius    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
+        radiushex = Color.from_string(radius).hex 
+        
         #BASE Indicator
         EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
@@ -137,11 +141,11 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_ethusd
         
-        if  (b[0] == b[2] == b[3] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == b[4] == "#00ff00"):
             #print("BTC Green")
             unit = "ETHUSD Green"
         
-        elif (b[1] == b[2] == b[3] == "#ff0000"):
+        elif (b[1] == b[2] == b[3] == b[4] == "#ff0000"):
             #print("BTC Red")
             unit = "ETHUSD Red"
 
@@ -424,3 +428,8 @@ def test():
     print(z.run_crypto())
 
 
+z = tradingview_main()
+z.selenium()
+z.usecookie()
+
+z.chart_btcusd()
