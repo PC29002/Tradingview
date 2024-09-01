@@ -43,9 +43,7 @@ a = TeleMain()
 
 ########################
 
-import MT5, schedule, time, tradingview, telebot, sys, os 
-from datetime import datetime, timedelta
-
+import MT5, schedule, time, tradingview, telebot, sys
 
 class TeleMain:
     
@@ -64,11 +62,11 @@ class TeleMain:
         
         for i in us:
             if i != "avoid":
-                #self.bot.send_message(-1002242173955,i)
-                self.bot.send_message(5626388450, i)
+                self.bot.send_message(-1002242173955,i)
+                #self.bot.send_message(5626388450, i)
                 print(i)
                     
-        time.sleep(25)
+        #time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
@@ -89,11 +87,11 @@ class TeleMain:
         
         for i in us:
             if i != "avoid":
-                #self.bot.send_message(-1002242173955,i)
-                self.bot.send_message(5626388450, i)
+                self.bot.send_message(-1002242173955,i)
+                #self.bot.send_message(5626388450, i)
                 print(i)
                     
-        time.sleep(25)
+        #time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
                 #print("self.bot.send_message(-1002242173955,us)")
@@ -297,19 +295,24 @@ class tele_main_commands:
 #TeleMain().temp()
 #TeleMain().run_us()
 
+import threading
 
-import threading 
+def run():
+    a = TeleMain_schedule()
+    b = tele_main_commands()
 
-a = TeleMain_schedule()
-b = tele_main_commands()
+    thread_a = threading.Thread(target=a.run)
+    thread_b = threading.Thread(target=b.start_run)
 
-thread_a = threading.Thread(target= a.run)
-thread_b = threading.Thread(target= b.start_run)
+    thread_a.start()
+    thread_b.start()
 
-thread_a.start()
-thread_b.start()
+    try:
+        thread_a.join()
+        thread_b.join()
+    
+    except Exception as e:
+        print(f"Error joining threads: {e}")
 
-thread_a.join()
-thread_b.join()
 
 
