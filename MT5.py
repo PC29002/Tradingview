@@ -12,10 +12,9 @@ Password: fwaijP14#
 Server:   Exness-MT5Trial6 
 Balance:  500
 
-login_id = 181597191
+            login_id = 181597191
             password = "Pcgandu@2002"
             server = "Exness-MT5Trial6"
-
 
 
 """
@@ -34,6 +33,7 @@ class mt5():
                 print("initialize() failed, error code =", self.mt.last_error())
                 quit()
 
+            
             login_id = 146825254
             password = "Pcgandu@2002"
             server = "Exness-MT5Real17"
@@ -51,6 +51,11 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 
+
+
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
+
     def acc_info(self):
        
         self.login()
@@ -60,7 +65,7 @@ class mt5():
         print("terminal info:",self.mt.terminal_info())
         print("Total Symbol",self.mt.symbols_total())
 
-        self.mt.shutdown()    
+        self.shutdown()  
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############                
 
@@ -77,33 +82,42 @@ class mt5():
             print(f"Balance: {balance}\nProfit: {profit}")                
             
             self.mt.shutdown()
+            self.shutdown()
             return f"Balance: {balance}\nProfit: {profit}"
         
         
         except Exception as e:
             print(f"An error occurred: {e}")
+            self.shutdown()
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 
     def close_positions(self):
-    
         try: 
             positions = self.mt.positions_get()
+
+            if not positions:
+                print("No Opened Positions")
+                return  # No need to shut down if there are no open positions
+
             for position in positions:
-                result = self.mt.Close(symbol='BTCUSDm.',ticket=position.ticket)
+                result = self.mt.Close(symbol='BTCUSDm', ticket=position.ticket)
 
-                if result != True:
-                    print("No Opened Positions")
-    
-                else:
+                if result:
                     print(f"Position {position.ticket} closed successfully")
-                    return 
-
-            # Shut down MetaTrader 5
+                    return f"Position {position.ticket} closed successfully"
+                else:
+                    print(f"Failed to close position {position.ticket}")
+                    return f"Failed to close position {position.ticket}"
+                
+            # Shut down MetaTrader 5 after attempting to close all positions
             self.shutdown()
     
         except Exception as e:
-            print("Error:",e)
+            print("Error:", e)
+            self.shutdown()
+            return "Error:", e
+
 
     
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
@@ -120,81 +134,130 @@ class mt5():
             else:
                 print("Orders not found")
                 return orders
-
+        
+        
         except Exception as e:
             
             print(f"An Error occured {e}")
             self.shutdown()
-
+        
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############                
 
-    def swing_high_low(self):
+    def swing_high_low(self, lookback=5):
+        try:
+            self.login()
         
-        # Specify the symbol and timeframe
-        symbol = "BTCUSDm"
-        timeframe = self.mt.TIMEFRAME_M30  # 30-Min timeframe
+            # Specify the symbol and timeframe
+            symbol = "BTCUSDm"
+            timeframe = self.mt.TIMEFRAME_M5  # 5-Min timeframe
 
-        # Retrieve historical data
-        rates = self.mt.copy_rates_from_pos(symbol, timeframe, 0, 1000)  # 1000 most recent candles
+            # Retrieve historical data
+            rates = self.mt.copy_rates_from_pos(symbol, timeframe, 0, 1000)  # 1000 most recent candles
 
-        # Convert to DataFrame for easier manipulation
-        data = pd.DataFrame(rates)
+            # Convert to DataFrame for easier manipulation
+            data = pd.DataFrame(rates)
 
-        # Convert 'time' to datetime if the column exists
-        if 'time' in data.columns:
-            data['time'] = pd.to_datetime(data['time'], unit='s')
-        else:
-            raise KeyError("The 'time' column is missing in the data")
+            # Define swing high and low detection function
+            def find_swings(data, lookback):
+                data['swing_high'] = data['high'][
+                    (data['high'] > data['high'].shift(1)) &
+                    (data['high'] > data['high'].shift(-1)) &
+                    (data['high'] > data['high'].shift(lookback)) &
+                    (data['high'] > data['high'].shift(-lookback))
+                ]   
+                data['swing_low'] = data['low'][
+                    (data['low'] < data['low'].shift(1)) &
+                    (data['low'] < data['low'].shift(-1)) &
+                    (data['low'] < data['low'].shift(lookback)) &
+                    (data['low'] < data['low'].shift(-lookback))
+                ]
+                return data
 
-        # Define swing high and low detection function
-        def find_swings(data, lookback=5):
-            data['swing_high'] = data['high'][(data['high'] > data['high'].shift(1)) &
-                                              (data['high'] > data['high'].shift(-1)) &
-                                              (data['high'] > data['high'].shift(2)) &
-                                              (data['high'] > data['high'].shift(-2))]
-            data['swing_low'] = data['low'][(data['low'] < data['low'].shift(1)) &
-                                            (data['low'] < data['low'].shift(-1)) &
-                                            (data['low'] < data['low'].shift(2)) &
-                                            (data['low'] < data['low'].shift(-2))]
-            return data
+            # Apply swing detection
+            swings = find_swings(data, lookback)
 
-        # Apply swing detection
-        swings = find_swings(data)
+            # Check if swings data is not empty
+            if not swings.dropna(subset=['swing_high']).empty:
+                most_recent_swing_high = swings.dropna(subset=['swing_high']).iloc[-1]
+            else:
+                most_recent_swing_high = None
 
-        # Find the most recent swing high and low
-        most_recent_swing_high = swings.dropna(subset=['swing_high']).iloc[-1]
-        most_recent_swing_low = swings.dropna(subset=['swing_low']).iloc[-1]
+            if not swings.dropna(subset=['swing_low']).empty:
+                most_recent_swing_low = swings.dropna(subset=['swing_low']).iloc[-1]
+            else:
+                most_recent_swing_low = None
 
-        # Display results
-        print("Swing High: ", most_recent_swing_high['swing_high'])
-        print("Swing Low:  ", most_recent_swing_low['swing_low'])
+            # Display results
+            if most_recent_swing_high is not None:
+                print("Swing High: ", most_recent_swing_high['swing_high'])
+                high = most_recent_swing_high['swing_high']
+            else:
+                print("No swing high detected.")
+                high = None
+
+            if most_recent_swing_low is not None:
+                print("Swing Low:  ", most_recent_swing_low['swing_low'])
+                low = most_recent_swing_low['swing_low']
+            else:
+                print("No swing low detected.")
+                low = None
+
+            self.low_sl  = low
+            self.high_sl = high 
         
-        self.high = most_recent_swing_high['swing_high']
-        self.low  = most_recent_swing_low['swing_low']
+        except Exception as e:
+            print("Check Network or user-details invalid\nMT5 Order Error")
+            print(e)
+            self.shutdown()
 
-    
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-    
-    def buy_btcusd(self):
+
+    def temp(self):
+
+        self.swing_high_low()
+        #time.sleep(2)
+        
+        low  = self.low_sl
+        high = self.high_sl
+        
+        #print(low, "\n", high)
         
         symbol = "BTCUSDm"
         buy    = self.mt.symbol_info_tick(symbol).ask
         sell   = self.mt.symbol_info_tick(symbol).bid
         
+        temp = (buy - low) * 2
+        print("Current Price", buy)
+        print("Profit", temp) 
+        print("Loss", low)
+
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
+###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
+    def buy_btcusd(self):
+        
+        #self.swing_high_low()
+        #time.sleep(2)
+        
+        symbol = "BTCUSDm"
+        buy    = self.mt.symbol_info_tick(symbol).ask
+        sell   = self.mt.symbol_info_tick(symbol).bid
+
         spread = buy - sell
         print("Spread: ", spread)
         
-        tp = (buy + 200) + spread
+        tp = buy + 200
         sl = (buy - 160) - spread
-
+        
+        """tp = ((buy - self.low_sl)*2) + buy
+        sl = self.low_sl"""
+        
         request = {
             'action': self.mt.TRADE_ACTION_DEAL,
             'symbol': symbol,
             'volume': 0.01,
-            #"volume": 3,
             'price': buy,
             'tp': tp,
             'sl': sl,
@@ -240,6 +303,7 @@ class mt5():
     def sell_btcusd(self):
         
         #self.swing_high_low()
+        #time.sleep(2)
         
         symbol = "BTCUSDm"
         buy    = self.mt.symbol_info_tick("BTCUSDm").ask
@@ -248,8 +312,11 @@ class mt5():
         spread = buy - sell
         print("Spread: ", spread)
         
-        tp = (sell - 200) - spread
+        tp = sell - 200 - spread
         sl = (sell + 160) + spread
+        
+        """tp = ((self.high_sl - sell)*2) - sell
+        sl = self.high_sl"""
         
         request = {
         "action": self.mt.TRADE_ACTION_DEAL,
@@ -301,3 +368,6 @@ class mt5():
 #mt5().buy_btc_order()
 #mt5().sell_btc_order()
 #mt5().acc_info()
+
+#mt5().swing_high_low()
+#mt5().temp()
