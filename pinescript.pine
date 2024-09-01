@@ -12,7 +12,7 @@
 
 //@version=5
 indicator(title="MACD", overlay=false)
-source = close
+source = High
 useCurrentRes = true
 resCustom = input.timeframe(title="Use Different Timeframe? Uncheck Box Above", defval="60")
 smd = true
@@ -105,19 +105,14 @@ EMA triangle Symbol Lib
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator(title="EMA triangle", overlay=true)
+indicator(title="Smoothing Heiken ashi candle with EMA Signal Triangle(BASE INDICATOR)", overlay=false)
 
 // Input lengths
-len = input(1, title="Length for smoothing")
-len_ha = input(1, title="Length for HA smoothing")
-len1 = input(21, 'Length EMA1')
-len2 = input(34, 'Length EMA2')
-len3 = input(50, 'Length EMA3')
-
+len = 1
+len_ha = 1
 l1 = 21
 l2 = 34
-l3 = 55
-
+l3 = 50
 
 // Calculate Heiken Ashi candles
 o = ta.ema(open, len)
@@ -137,6 +132,8 @@ smooth_ha_close = ta.ema(haclose, len_ha)
 smooth_ha_high = ta.ema(hahigh, len_ha)
 smooth_ha_low = ta.ema(halow, len_ha)
 
+// Plot Heiken Ashi candles
+plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
 
 // Calculate EMA trends
 EMA0 = ta.ema(smooth_ha_close, 1)
@@ -164,20 +161,18 @@ var bool prevBearish = na
 trendChangeBullish = na(prevBullish) ? false : (not prevBullish and bullish)
 trendChangeBearish = na(prevBearish) ? false : (not prevBearish and bearish)
 
+// Plot trend change shapes
+plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00ff00, size=size.small, title="Bullish Trend Change")
+plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#ff0000, size=size.small, title="Bearish Trend Change")
+plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00000000, size=size.small, title="Bullish State")
+plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#00000000, size=size.small, title="Bearish State")
+
 // Update previous state
 prevBullish := bullish
 prevBearish := bearish
 
-// Plot Heiken Ashi candles
-//plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
-
-// Ensure shapes are persistent
-plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.belowbar, color=#00ff00, size=size.small, title="Bullish Trend Change")
-plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.abovebar, color=#ff0000, size=size.small, title="Bearish Trend Change")
-
-// Plot shapes for the current state
-plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00000000, size=size.small, title="Bullish State")
-plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#00000000, size=size.small, title="Bearish State")
+// Define alert condition
+alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Alert", message="Trend change detected.")
 
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
@@ -187,16 +182,41 @@ plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triang
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 
+/////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+
+//RSi Candle with EMA Triangle Signal Lib
+
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
-RSI Candle Lib
+/////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
+
+//RSi Candle with EMA Triangle Signal Lib
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator("RSI Candle", overlay=false)
+indicator("RSi Candle with EMA Triangle Signal", overlay=false)
 
 import lastguru/DominantCycle/2 as d
+
+fast_length      = 10
+slow_length      = 22
+average_length   = 42
+deviation        = 2
+middle_deviation = 1
+style = "Style"
+color_candles = false
+ashi = style == "Heikin Ashi"
+not_line = style != "Line"
+length = 24
+smoothing = 3
+colour_enable = false
+bullish_color = #00ff00
+bearish_color = #ff0000
+len1 = 21
+len2 = 34
+len3 = 50
+
 
 // Custom functions
 grad_100(src)=>
@@ -268,15 +288,6 @@ rsi(source = close, length = 14, smoothing = 3)=>
     down_filtered = chebyshevI(down, length, 0.5)
     rsi = down_filtered == 0 ? 100 : 100 - (100 / (1 + up_filtered / down_filtered))
 
-// User inputs
-style = input.string("Candle With Patterns", "Style", ["Candle", "Candle With Patterns", "Heikin Ashi", "Line"], inline = "Style")
-color_candles = input.bool(false, "Colorize", "Color the candles based on the RSI value.", "Style")
-ashi = style == "Heikin Ashi"
-not_line = style != "Line"
-length = input.float(24, "Length", 3, 500, 0.5)
-smoothing = input.float(3, "Smoothing", 1, 500, 0.25)
-colour_enable = input.bool(false, "Color Candles Overlay", "Enable this to color the chart's candles.")
-
 // Calculate RSI and Heikin Ashi values
 rsi_open = rsi(open, length, smoothing)
 rsi_high = rsi(high, length, smoothing)
@@ -291,9 +302,161 @@ ha_low = ha_low(rsi_open, rsi_high, rsi_low, rsi_close, ashi)
 OHLC4 = math.avg(ha_close, ha_open, ha_high, ha_low)
 grad_100 = grad_100(ha_close)
 
-// Plot candles
-bullish_color = #00ff00
-bearish_color = #ff0000
+EMA0 = ta.ema(ha_close, 1)
+EMA1 = ta.ema(ha_close, len1)
+EMA2 = ta.ema(ha_close, len2)
+EMA3 = ta.ema(ha_close, len3)
+
+// Define bullish and bearish conditions
+Bull1 = EMA1 < EMA0
+Bull2 = EMA2 < EMA0
+Bull3 = EMA3 < EMA0
+
+Bear1 = EMA1 > EMA0
+Bear2 = EMA2 > EMA0
+Bear3 = EMA3 > EMA0
+
+bullish = Bull1 and Bull2 and Bull3
+bearish = Bear1 and Bear2 and Bear3
+
+// Track previous state
+var bool prevBullish = na
+var bool prevBearish = na
+
+// Check if trend changes
+trendChangeBullish = na(prevBullish) ? false : (not prevBullish and bullish)
+trendChangeBearish = na(prevBearish) ? false : (not prevBearish and bearish)
+
+// Update previous state
+prevBullish := bullish
+prevBearish := bearish
+
+ema(src, len) => //{
+    alpha = 2 / (len + 1)
+    sum   = 0.0
+    sum  := na(sum[1]) ? src : alpha * src + (1 - alpha) * nz(sum[1])
+
+
+dema(float src, float len) =>
+    e = ema(src, len)
+    dema = 2 * e - ema(e, len)
+    dema
+
+
+ema(source)=>
+    var float ema = 0.0
+    var int count = 0
+    count := nz(count[1]) + 1
+    ema := (1.0 - 2.0 / (count + 1.0)) * nz(ema[1]) + 2.0 / (count + 1.0) * source
+    ema
+
+
+tma(src, int len) => //{
+    //src is an input.source
+    //len is an input.int
+    ema1 = ema(src, len)
+    ema2 = ema(ema1, len)
+    ema3 = ema(ema2, len)
+    tma  = 3 * (ema1 - ema2) + ema3
+
+grad_high(values)=>
+    switch values
+        38 => color.rgb(0, 255, 0)
+        37 => color.rgb(0, 255, 0)
+        36 => color.rgb(0, 255, 0)
+        35 => color.rgb(0, 255, 0)
+        34 => color.rgb(0, 255, 0)
+        33 => color.rgb(0, 255, 0)
+        32 => color.rgb(0, 255, 0)
+        31 => color.rgb(0, 255, 0)
+        30 => color.rgb(0, 255, 0)
+        29 => color.rgb(0, 255, 0)
+        28 => color.rgb(0, 255, 0)
+        27 => color.rgb(0, 255, 0)
+        26 => color.rgb(0, 255, 0)
+        25 => color.rgb(0, 255, 0)
+        24 => color.rgb(0, 255, 0)
+        23 => color.rgb(0, 255, 0)
+        22 => color.rgb(0, 255, 0)
+        
+
+grad_low(values)=>
+    switch 39 - values
+        39 => #eb0027
+        38 => color.rgb(255, 0, 0)
+        37 => color.rgb(255, 0, 0)
+        36 => color.rgb(255, 0, 0)
+        35 => color.rgb(255, 0, 0)
+        34 => color.rgb(255, 0, 0)
+        33 => color.rgb(255, 0, 0)
+        32 => color.rgb(255, 0, 0)
+        31 => color.rgb(255, 0, 0)
+        30 => color.rgb(255, 0, 0)
+        29 => color.rgb(255, 0, 0)
+        28 => color.rgb(255, 0, 0)
+        27 => color.rgb(255, 0, 0)
+        26 => color.rgb(255, 0, 0)
+        25 => color.rgb(255, 0, 0)
+        24 => color.rgb(255, 0, 0)
+        23 => color.rgb(255, 0, 0)
+        22 => color.rgb(255, 0, 0)
+        
+atan2(y, x) =>
+    var float angle = 0.0
+    if x > 0
+        angle := math.atan(y / x)
+    else
+        if x < 0 and y >= 0
+            angle := math.atan(y / x) + math.pi
+        else
+            if x < 0 and y < 0
+                angle := math.atan(y / x) - math.pi
+            else
+                if x == 0 and y > 0
+                    angle := math.pi / 2
+                else
+                    if x == 0 and y < 0
+                        angle := -math.pi / 2
+    angle
+ 
+degrees(float source) =>
+    source * 180 / math.pi
+
+trend_angle(source, length) =>
+    atr = ema(ta.highest(source, length) - ta.lowest(source, length))
+    slope = (source - source[length]) / (atr/(length) * length)
+    angle_rad = atan2(slope, 1)
+    degrees = degrees(angle_rad)
+    normalized = int((90 + degrees)/180 * 39)
+
+noise_gate(signal, ratio, level, knee_type) =>
+    // Calculate the absolute value of the signal
+    abs_signal = math.abs(signal)
+
+    // Check the value of the knee_type parameter
+    if knee_type == "hard"
+        // If the knee_type is "hard", apply a hard knee
+        if abs_signal > level
+            out = signal
+        else
+            out = signal / ratio
+    else
+        // If the knee_type is not "hard", apply a soft knee
+        if (abs_signal > level) or level == 0
+            // If the absolute value is above the threshold, return the signal as is
+            out = signal
+        else
+            // If the absolute value is below the threshold, calculate the soft knee ratio
+            soft_knee_ratio = 1 - (level - abs_signal) / level
+            // Reduce the amplitude of the signal by the soft knee ratio
+            out = signal * soft_knee_ratio
+
+
+// Plot the combined shape based on trend change
+plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.bottom, color=bullish_color, size=size.small, title="Bullish Trend Change")
+plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearish_color, size=size.small, title="Bearish Trend Change")
+plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.bottom, color=color.rgb(0, 0, 0, 100), size=size.small, title="Bullish State")
+plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.bottom, color=color.rgb(0, 0, 0, 100), size=size.small, title="Bearish State")
 
 colour = color_candles ? grad_100 : ha_close > ha_open ? bullish_color : bearish_color
 plotcandle(not_line ? ha_open : na, not_line ? ha_high : na, not_line ? ha_low : na, not_line ? ha_close : na, "RSI HA Candles", colour, colour, bordercolor = colour)
@@ -577,73 +740,100 @@ plot(macd + 50, "MACD", macd_color, style = plot.style_linebr, linewidth = 3, hi
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
-SuperTend Cross Symbol Lib
+Polynomial Regression Keltner Channel Lib
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
 //@version=5
-indicator(title="SuperTrend Cross Symbol", overlay=true)
+indicator("Polynomial Regression Keltner Channel", "PR Keltner Channel [ChartPrime]", overlay=true)
 
-// Input parameters
-relativeStrengthIndexLength = 14
-smoothingLength = 21
-rsiInputSource = close
-isSmoothed = false
+// --------------------------------------------------------------------------------------------------------------------}
+// 𝙐𝙎𝙀𝙍 𝙄𝙉𝙋𝙐𝙏𝙎
+// --------------------------------------------------------------------------------------------------------------------{
+// @variable Length for calculations
+int   length            = input(100, title="Length")
+// @variable Source price series
+float src               = input(hlc3, title="Source")
+// @variable Base multiplier for ATR
+float baseATRMultiplier = input.float(3., step = 0.1, title="Base ATR Multiplier")/10
 
-movingAverageLength = 14
-movingAverageType = "HMA"
-showMovingAverage = true
+// @variable Color for upper bands
+plus_color  = #00ff00
+// @variable Color for lower bands
+minus_color = #ff0000
 
-trendFactor = 0.8
-averageTrueRangeLength = 10
+// @variable Arrays to store upper and lower band values
+upper_array = array.new<float>(8)
+lower_array = array.new<float>(8)
 
-colorUp = #00ff00
-colorDown = #ff0000
-
-// MA Selection
-calculateMA(source, length, type) =>
-    switch type
-        "HMA" => ta.hma(source, length)
-
-// Function to calculate ATR
-calculateATR(source, atrLength) =>
-    highestHigh = ta.highest(source, atrLength)
-    lowestLow = ta.lowest(source, atrLength)
-    trueRange = na(highestHigh[1]) ? highestHigh - lowestLow : math.max(highestHigh - lowestLow, math.abs(highestHigh - source[1]), math.abs(lowestLow - source[1]))
-    ta.rma(trueRange, atrLength)
-
-// Function to calculate Supertrend
-calculateSupertrend(factor, atrPeriod, source) =>
-    priceSource = source
-    atr = calculateATR(source, atrPeriod)
-    upperBand = priceSource + factor * atr
-    lowerBand = priceSource - factor * atr
-    prevLowerBand = nz(lowerBand[1])
-    prevUpperBand = nz(upperBand[1])
-    lowerBand := lowerBand > prevLowerBand or source[1] < prevLowerBand ? lowerBand : prevLowerBand
-    upperBand := upperBand < prevUpperBand or source[1] > prevUpperBand ? upperBand : prevUpperBand
-    int trendDirection = na
-    float supertrendValue = na
-    prevSupertrend = supertrendValue[1]
-    if na(atr[1])
-        trendDirection := 1
-    else if prevSupertrend == prevUpperBand
-        trendDirection := source > upperBand ? -1 : 1
-    else
-        trendDirection := source < lowerBand ? 1 : -1
-    supertrendValue := trendDirection == -1 ? lowerBand : upperBand
-    [supertrendValue, trendDirection]
-
-// Calculating RSI
-rsiValue = isSmoothed ? ta.hma(ta.rsi(rsiInputSource, relativeStrengthIndexLength), smoothingLength) : ta.rsi(rsiInputSource, relativeStrengthIndexLength)
-rsiMovingAverage = calculateMA(rsiValue, movingAverageLength, movingAverageType)
-
-// Calculating Supertrend based on RSI values
-[rsiSupertrend, trendDirection] = calculateSupertrend(trendFactor, averageTrueRangeLength, rsiValue)
+// @variable Arrays to store colors for upper and lower bands
+upper_color = array.new<color>(8)
+lower_color = array.new<color>(8)
 
 
-// Plot trend change shapes// Plotting
-plotshape(rsiSupertrend, color = trendDirection == -1 ? colorUp : colorDown, title="Supertrend", style = shape.cross, size = size.auto, location = location.bottom)
+
+// --------------------------------------------------------------------------------------------------------------------}
+// 𝙄𝙉𝘿𝙄𝘾𝘼𝙏𝙊𝙍 𝘾𝘼𝙇𝘾𝙐𝙇𝘼𝙏𝙄𝙊𝙉𝙎
+// --------------------------------------------------------------------------------------------------------------------{
+
+polynomial_regression(src, length) =>
+    sumX = 0.0
+    sumY = 0.0
+    sumXY = 0.0
+    sumX2 = 0.0
+    sumX3 = 0.0
+    sumX4 = 0.0
+    sumX2Y = 0.0
+    n = float(length)
+
+    for i = 0 to n - 1
+        x = float(i)
+        y = src[i]
+        sumX   += x
+        sumY   += y
+        sumXY  += x * y
+        sumX2  += x * x
+        sumX3  += x * x * x
+        sumX4  += x * x * x * x
+        sumX2Y += x * x * y
+    
+    slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
+    intercept = (sumY - slope * sumX) / n
+    slope + intercept
+
+
+// Calculate basis using polynomial regression
+basis = polynomial_regression(src, length)
+
+// Calculate ATR and its SMA
+atr     = ta.atr(length)
+atr_sma = ta.sma(atr, 10)
+
+// Calculate Keltner Channel Bands
+dynamicMultiplier  = (1 + (atr / atr_sma)) * baseATRMultiplier
+volatility_basis   = (1 + (atr / atr_sma)) * dynamicMultiplier * atr
+
+// Set values for upper and lower bands
+for i = 1 to 4 // 4 bands above and below basis
+    upper_array.set(i-1, basis + i * volatility_basis)
+    lower_array.set(i-1, basis - i * volatility_basis)
+    upper_color.set(i-1, color.new(plus_color, i == 4 ? 90 : i * 25))
+    lower_color.set(i-1, color.new(minus_color, i == 4 ? 90 : i * 25))
+
+
+
+// Signal Conditions
+bool  trend  = basis > basis[2]
+
+// --------------------------------------------------------------------------------------------------------------------}
+// 𝙑𝙄𝙎𝙐𝘼𝙇𝙄𝙕𝘼𝙏𝙄𝙊𝙉
+// --------------------------------------------------------------------------------------------------------------------{
+
+// Plot upper and lower bands
+plot(trend ? upper_array.get(3) : na, "", upper_color.get(0), linewidth=3, style = plot.style_linebr, editable = false)
+plot(trend ? na : lower_array.get(3), "", lower_color.get(0), linewidth=3, style = plot.style_linebr, editable = false)
+// --------------------------------------------------------------------------------------------------------------------}
+
 
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
@@ -1068,7 +1258,7 @@ alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Ale
 
 /////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 
-//RSi Candle with EMA Triangle Signal
+//RSi Candle with EMA Triangle Signal Lib
 
 ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// ///////////////////// /////////////////////
 //@version=5
@@ -1345,40 +1535,7 @@ noise_gate(signal, ratio, level, knee_type) =>
             // Reduce the amplitude of the signal by the soft knee ratio
             out = signal * soft_knee_ratio
 
-// 
 
-
-High = ta.sma(high, average_length)
-Low = ta.sma(low, average_length)
-
-signal = tma(hl2, fast_length)
-signal_2 = dema(hl2, slow_length)
-
-avg = math.avg(High, Low)
-
-top = High - avg
-bot = Low - avg
-
-fast = signal - avg
-slow = signal_2 - avg
-
-stdev_up = ta.stdev(high, average_length)
-stdev_down = ta.stdev(low, average_length)
-stdev_center = ta.stdev(hl2, average_length)
-stdev_avg = nz(math.avg(stdev_up, stdev_down, stdev_center))
-stdev_percent = ta.percentrank(stdev_avg, int(average_length))
-
-max = top + stdev_up * deviation
-min = bot - stdev_down * deviation
-signal_fast = ((fast - min) / (max - min)) * 100
-signal_slow = ((slow - min) / (max - min)) * 100
-
-
-macd = noise_gate(signal_fast - signal_slow, 5, 0.03, "hard")
-macd_angle = trend_angle(macd, 2)
-macd_color = color.new(macd > 0 ? grad_high(macd_angle) : grad_low(macd_angle), 10)
- 
-plot(macd + 50, "MACD", macd_color, style = plot.style_linebr, linewidth = 3, histbase = 50)
 
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
@@ -1388,48 +1545,171 @@ plot(macd + 50, "MACD", macd_color, style = plot.style_linebr, linewidth = 3, hi
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
+
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-Smoothing Heiken ashi candle with EMA Signal Triangle(BASE INDICATOR)
+// RSI Traingle + Polynomial Regression Keltner Channel 
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
 //@version=5
-indicator(title="Smoothing Heiken ashi candle with EMA Signal Triangle(BASE INDICATOR)", overlay=false)
+indicator(title="RSI Traingle + Polynomial Regression Keltner Channel", overlay = false)
 
-// Input lengths
-len = input(1, title="Length for smoothing")
-len_ha = input(1, title="Length for HA smoothing")
-len1 = input(21, 'Length EMA1')
-len2 = input(34, 'Length EMA2')
-len3 = input(50, 'Length EMA3')
+//-----------------------------------------------------------------------------}
+//Settings
+//-----------------------------------------------------------------------------{
 
-// Calculate Heiken Ashi candles
-o = ta.ema(open, len)
-c = ta.ema(close, len)
-h = ta.ema(high, len)
-l = ta.ema(low, len)
+// Lenghts for RSI Traingle               (1)
 
-haclose = (o + h + l + c) / 4
-var float haopen = na
-haopen := na(haopen[1]) ? (o + c) / 2 : (haopen[1] + haclose[1]) / 2
-hahigh = math.max(h, math.max(haopen, haclose))
-halow = math.min(l, math.min(haopen, haclose))
+fast_length      = 10
+slow_length      = 22
+average_length   = 42
+deviation        = 2
+middle_deviation = 1
+style = "Style"
+color_candles = false
+ashi = style == "Heikin Ashi"
+not_line = style != "Line"
+length = 24
+smoothing = 3
+colour_enable = false
+bullish_color = #00ff00
+bearish_color = #ff0000
+len1 = 21
+len2 = 34
+len3 = 50
 
-// Smoothed Heiken Ashi candles
-smooth_ha_open = ta.ema(haopen, len_ha)
-smooth_ha_close = ta.ema(haclose, len_ha)
-smooth_ha_high = ta.ema(hahigh, len_ha)
-smooth_ha_low = ta.ema(halow, len_ha)
 
-// Plot Heiken Ashi candles
-plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
 
-// Calculate EMA trends
-EMA0 = ta.ema(smooth_ha_close, 1)
-EMA1 = ta.ema(smooth_ha_close, len1)
-EMA2 = ta.ema(smooth_ha_close, len2)
-EMA3 = ta.ema(smooth_ha_close, len3)
+
+// Polynomial Regression Keltner Channel  (2)
+
+int   lenghtp           = 100
+float src               = hlc3
+float baseATRMultiplier = 3./10
+
+plus_color  = #00ff00
+minus_color = #ff0000
+
+
+//-----------------------------------------------------------------------------}
+
+
+
+//-----------------------------------------------------------------------------}
+//Define variables
+//-----------------------------------------------------------------------------{
+
+// Variables for RSI Traingle             (1)
+
+grad_100(src)=>
+    color out = switch int(src)
+        0 => color.new(#1500FF , 20)
+        1 => color.new(#1709F6 , 20)
+        // (Other colors here)...
+        99 => color.new(#2A2A2A , 20)
+        100 => color.new(#220027 , 20)
+    out
+
+// Custom cosh function
+cosh(float x) =>
+    (math.exp(x) + math.exp(-x)) / 2
+
+// Custom acosh function
+acosh(float x) =>
+    x < 1 ? na : math.log(x + math.sqrt(x * x - 1))
+
+// Custom sinh function
+sinh(float x) =>
+    (math.exp(x) - math.exp(-x)) / 2
+
+// Custom asinh function
+asinh(float x) =>
+    math.log(x + math.sqrt(x * x + 1))
+
+// Chebyshev Type I Moving Average
+chebyshevI(float src, float len, float ripple) =>
+    a = 0.
+    b = 0.
+    g = 0.
+    chebyshev = 0.
+    
+    a := cosh(1 / len * acosh(1 / (1 - ripple)))
+    b := sinh(1 / len * asinh(1 / ripple))
+    g := (a - b) / (a + b)
+    chebyshev := (1 - g) * src + g * nz(chebyshev[1])
+    chebyshev
+
+
+
+
+// Polynomial Regression Keltner Channel  (2)
+
+upper_array = array.new<float>(8)
+lower_array = array.new<float>(8)
+
+upper_color = array.new<color>(8)
+lower_color = array.new<color>(8)
+
+
+//-----------------------------------------------------------------------------}
+
+
+
+//------------------------------------------------------------------------------}
+// Calculation
+//------------------------------------------------------------------------------{
+
+// Calculation for RSI Traingle          (1)
+
+ha_close(float Open = open, float High = high, float Low = low, float Close = close, bool enable = true) =>
+    ha_close = (Open + High + Low + Close) / 4
+    out = enable == true ? ha_close : Close
+
+ha_open(float Open = open, float High = high, float Low = low, float Close = close, bool enable = true) =>
+    ha_open  = float(na)
+    ha_close = ha_close(Open, High, Low, Close)
+    ha_open := na(ha_open[1]) ? (Open + Close) / 2 : (nz(ha_open[1]) + nz(ha_close[1])) / 2 
+    out = enable == true ? ha_open : Open
+
+ha_high(float Open = open, float High = high, float Low = low, float Close = close, bool enable = true) =>
+    ha_close = ha_close(Open, High, Low, Close)
+    ha_open  = ha_open(Open, High, Low, Close)
+    ha_high  = math.max(High, math.max(ha_open, ha_close))
+    out = enable == true ? ha_high : High
+
+ha_low(float Open = open, float High = high, float Low = low, float Close = close, bool enable = true) =>
+    ha_close = ha_close(Open, High, Low, Close)
+    ha_open  = ha_open(Open, High, Low, Close)
+    ha_low = math.min(Low,  math.min(ha_open, ha_close))
+    out = enable == true ? ha_low : Low
+
+rsi(source = close, length = 14, smoothing = 3)=>
+    close_filtered = chebyshevI(source, smoothing, 0.5)
+    up = math.max(ta.change(close_filtered), 0)
+    down = -math.min(ta.change(close_filtered), 0)
+    up_filtered = chebyshevI(up, length, 0.5)
+    down_filtered = chebyshevI(down, length, 0.5)
+    rsi = down_filtered == 0 ? 100 : 100 - (100 / (1 + up_filtered / down_filtered))
+
+// Calculate RSI and Heikin Ashi values
+rsi_open = rsi(open, length, smoothing)
+rsi_high = rsi(high, length, smoothing)
+rsi_low = rsi(low, length, smoothing)
+rsi_close = rsi(close, length, smoothing)
+
+ha_close = ha_close(rsi_open, rsi_high, rsi_low, rsi_close, ashi)
+ha_open = ha_open(rsi_open, rsi_high, rsi_low, rsi_close, ashi)
+ha_high = ha_high(rsi_open, rsi_high, rsi_low, rsi_close, ashi)
+ha_low = ha_low(rsi_open, rsi_high, rsi_low, rsi_close, ashi)
+
+OHLC4 = math.avg(ha_close, ha_open, ha_high, ha_low)
+grad_100 = grad_100(ha_close)
+
+EMA0 = ta.ema(ha_close, 1)
+EMA1 = ta.ema(ha_close, len1)
+EMA2 = ta.ema(ha_close, len2)
+EMA3 = ta.ema(ha_close, len3)
 
 // Define bullish and bearish conditions
 Bull1 = EMA1 < EMA0
@@ -1451,18 +1731,216 @@ var bool prevBearish = na
 trendChangeBullish = na(prevBullish) ? false : (not prevBullish and bullish)
 trendChangeBearish = na(prevBearish) ? false : (not prevBearish and bearish)
 
-// Plot trend change shapes
-plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00ff00, size=size.small, title="Bullish Trend Change")
-plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#ff0000, size=size.small, title="Bearish Trend Change")
-plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00000000, size=size.small, title="Bullish State")
-plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#00000000, size=size.small, title="Bearish State")
-
 // Update previous state
 prevBullish := bullish
 prevBearish := bearish
 
-// Define alert condition
-alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Alert", message="Trend change detected.")
+ema(src, len) => //{
+    alpha = 2 / (len + 1)
+    sum   = 0.0
+    sum  := na(sum[1]) ? src : alpha * src + (1 - alpha) * nz(sum[1])
+
+
+dema(float src, float len) =>
+    e = ema(src, len)
+    dema = 2 * e - ema(e, len)
+    dema
+
+
+ema(source)=>
+    var float ema = 0.0
+    var int count = 0
+    count := nz(count[1]) + 1
+    ema := (1.0 - 2.0 / (count + 1.0)) * nz(ema[1]) + 2.0 / (count + 1.0) * source
+    ema
+
+
+tma(src, int len) => //{
+    //src is an input.source
+    //len is an input.int
+    ema1 = ema(src, len)
+    ema2 = ema(ema1, len)
+    ema3 = ema(ema2, len)
+    tma  = 3 * (ema1 - ema2) + ema3
+
+grad_high(values)=>
+    switch values
+        38 => color.rgb(0, 255, 0)
+        37 => color.rgb(0, 255, 0)
+        36 => color.rgb(0, 255, 0)
+        35 => color.rgb(0, 255, 0)
+        34 => color.rgb(0, 255, 0)
+        33 => color.rgb(0, 255, 0)
+        32 => color.rgb(0, 255, 0)
+        31 => color.rgb(0, 255, 0)
+        30 => color.rgb(0, 255, 0)
+        29 => color.rgb(0, 255, 0)
+        28 => color.rgb(0, 255, 0)
+        27 => color.rgb(0, 255, 0)
+        26 => color.rgb(0, 255, 0)
+        25 => color.rgb(0, 255, 0)
+        24 => color.rgb(0, 255, 0)
+        23 => color.rgb(0, 255, 0)
+        22 => color.rgb(0, 255, 0)
+        
+
+grad_low(values)=>
+    switch 39 - values
+        39 => #eb0027
+        38 => color.rgb(255, 0, 0)
+        37 => color.rgb(255, 0, 0)
+        36 => color.rgb(255, 0, 0)
+        35 => color.rgb(255, 0, 0)
+        34 => color.rgb(255, 0, 0)
+        33 => color.rgb(255, 0, 0)
+        32 => color.rgb(255, 0, 0)
+        31 => color.rgb(255, 0, 0)
+        30 => color.rgb(255, 0, 0)
+        29 => color.rgb(255, 0, 0)
+        28 => color.rgb(255, 0, 0)
+        27 => color.rgb(255, 0, 0)
+        26 => color.rgb(255, 0, 0)
+        25 => color.rgb(255, 0, 0)
+        24 => color.rgb(255, 0, 0)
+        23 => color.rgb(255, 0, 0)
+        22 => color.rgb(255, 0, 0)
+        
+atan2(y, x) =>
+    var float angle = 0.0
+    if x > 0
+        angle := math.atan(y / x)
+    else
+        if x < 0 and y >= 0
+            angle := math.atan(y / x) + math.pi
+        else
+            if x < 0 and y < 0
+                angle := math.atan(y / x) - math.pi
+            else
+                if x == 0 and y > 0
+                    angle := math.pi / 2
+                else
+                    if x == 0 and y < 0
+                        angle := -math.pi / 2
+    angle
+ 
+degrees(float source) =>
+    source * 180 / math.pi
+
+trend_angle(source, length) =>
+    atr = ema(ta.highest(source, length) - ta.lowest(source, length))
+    slope = (source - source[length]) / (atr/(length) * length)
+    angle_rad = atan2(slope, 1)
+    degrees = degrees(angle_rad)
+    normalized = int((90 + degrees)/180 * 39)
+
+noise_gate(signal, ratio, level, knee_type) =>
+    // Calculate the absolute value of the signal
+    abs_signal = math.abs(signal)
+
+    // Check the value of the knee_type parameter
+    if knee_type == "hard"
+        // If the knee_type is "hard", apply a hard knee
+        if abs_signal > level
+            out = signal
+        else
+            out = signal / ratio
+    else
+        // If the knee_type is not "hard", apply a soft knee
+        if (abs_signal > level) or level == 0
+            // If the absolute value is above the threshold, return the signal as is
+            out = signal
+        else
+            // If the absolute value is below the threshold, calculate the soft knee ratio
+            soft_knee_ratio = 1 - (level - abs_signal) / level
+            // Reduce the amplitude of the signal by the soft knee ratio
+            out = signal * soft_knee_ratio
+
+
+
+// Polynomial Regression Keltner Channel (2)
+
+polynomial_regression(src, lenghtp) =>
+    sumX = 0.0
+    sumY = 0.0
+    sumXY = 0.0
+    sumX2 = 0.0
+    sumX3 = 0.0
+    sumX4 = 0.0
+    sumX2Y = 0.0
+    n = float(lenghtp)
+
+    for i = 0 to n - 1
+        x = float(i)
+        y = src[i]
+        sumX   += x
+        sumY   += y
+        sumXY  += x * y
+        sumX2  += x * x
+        sumX3  += x * x * x
+        sumX4  += x * x * x * x
+        sumX2Y += x * x * y
+    
+    slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
+    intercept = (sumY - slope * sumX) / n
+    slope + intercept
+
+basis = polynomial_regression(src, lenghtp)
+
+atr     = ta.atr(lenghtp)
+atr_sma = ta.sma(atr, 10)
+
+dynamicMultiplier  = (1 + (atr / atr_sma)) * baseATRMultiplier
+volatility_basis   = (1 + (atr / atr_sma)) * dynamicMultiplier * atr
+
+for i = 1 to 4 // 4 bands above and below basis
+    upper_array.set(i-1, basis + i * volatility_basis)
+    lower_array.set(i-1, basis - i * volatility_basis)
+    upper_color.set(i-1, color.new(plus_color, i == 4 ? 90 : i * 25))
+    lower_color.set(i-1, color.new(minus_color, i == 4 ? 90 : i * 25))
+
+bool  trend  = basis > basis[2]
+
+
+//-----------------------------------------------------------------------------}
+
+
+
+//-----------------------------------------------------------------------------}
+//Plot
+//-----------------------------------------------------------------------------{
+
+// Plot for RSI Traingle                 (1)
+
+plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.bottom, color=bullish_color, size=size.small, title="Bullish Trend Change")
+plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearish_color, size=size.small, title="Bearish Trend Change")
+plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.bottom, color=color.rgb(0, 0, 0, 100), size=size.small, title="Bullish State")
+plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.bottom, color=color.rgb(0, 0, 0, 100), size=size.small, title="Bearish State")
+colour = color_candles ? grad_100 : ha_close > ha_open ? bullish_color : bearish_color
+plotcandle(not_line ? ha_open : na, not_line ? ha_high : na, not_line ? ha_low : na, not_line ? ha_close : na, "RSI HA Candles", colour, colour, bordercolor = color)
+
+// Polynomial Regression Keltner Channel (2)
+
+plot(trend ? upper_array.get(3) : na, "", upper_color.get(0), linewidth=3, style = plot.style_linebr, editable = false)
+plot(trend ? na : lower_array.get(3), "", lower_color.get(0), linewidth=3, style = plot.style_linebr, editable = false)
+
+
+
+
+//-----------------------------------------------------------------------------}
+
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
@@ -1471,33 +1949,42 @@ alertcondition(trendChangeBullish or trendChangeBearish, title="Trend Change Ale
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-// Smoot ashi EMA Triangle + Dynamic S-P + MACD
+// Smoot ashi EMA Triangle + HypT + MACD
 
 /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
 //@version=5
-indicator(title="Smoot ashi EMA Triangle + Dynamic S-P",max_bars_back=1000)
+indicator(title="Trail(Smoot ashi EMA Triangle + HypT + MACD)",max_bars_back=1000)
+
 
 //-----------------------------------------------------------------------------}
 //Settings
 //-----------------------------------------------------------------------------{
 
-// Input lengths for EMA Triangle 
+// Lenghts for EMA Traingle(1)
+
 len = 1
 len_ha = 1
 l1 = 21
 l2 = 34
-l3 = 55
+l3 = 50
 
-// Input lengths for S-P
-leftBars = 15
-rightBars = 15
 
-//Input Lenghts for MACD
-source = close
+// Lenghts for HypT        (2)
+
+mult = 5
+slope = 18
+width = 80
+bullCss = #00ff00
+bearCss = #ff0000
+
+
+
+// Lenghts for Macd        (3)
+
+source = high
 useCurrentRes = true
 resCustom = input.timeframe(title="Use Different Timeframe? Uncheck Box Above", defval="60")
 smd = true
@@ -1508,7 +1995,6 @@ hist_colorChange = true
 fastLength = 12
 slowLength = 26
 signalLength = 9
-
 //-----------------------------------------------------------------------------}
 
 
@@ -1517,12 +2003,22 @@ signalLength = 9
 //Define variables
 //-----------------------------------------------------------------------------{
 
-// EMA Traingle (1)
+// Variables for EMA Traingle(1)
 
-//Color 
-bullCss  = #00ff00
-bearCss  = #ff0000
-tempCss  = #00000000
+
+
+// Variables for HypT        (2)
+
+// Variables for Macd        (3)
+//-----------------------------------------------------------------------------}
+
+
+
+//------------------------------------------------------------------------------}
+// Calculation
+//------------------------------------------------------------------------------{
+
+// Calculation for EMA Traingle(1)
 
 // Calculate Heiken Ashi candles
 o = ta.ema(open, len)
@@ -1541,14 +2037,6 @@ smooth_ha_open = ta.ema(haopen, len_ha)
 smooth_ha_close = ta.ema(haclose, len_ha)
 smooth_ha_high = ta.ema(hahigh, len_ha)
 smooth_ha_low = ta.ema(halow, len_ha)
-//-----------------------------------------------------------------------------}
-
-
-//------------------------------------------------------------------------------}
-// Calculation
-//------------------------------------------------------------------------------{
-
-//EMA Triangle (1)
 
 // Calculate EMA trends
 EMA0 = ta.ema(smooth_ha_close, 1)
@@ -1576,30 +2064,30 @@ var bool prevBearish = na
 trendChangeBullish = na(prevBullish) ? false : (not prevBullish and bullish)
 trendChangeBearish = na(prevBearish) ? false : (not prevBearish and bearish)
 
-// Update previous state
-prevBullish := bullish
-prevBearish := bearish
+// Calculation for HypT        (2)
 
-//S-P (2)
+var float upper = na
+var float lower = na
+var float avg   = close
 
-// Calculate pivots
-highPivot = ta.pivothigh(leftBars, rightBars)
-lowPivot = ta.pivotlow(leftBars, rightBars)
+var hold = 0.
+var os = 1.
+    
+atr = nz(ta.atr(200)) * mult
 
-// Initialize variables to store the last pivot values
-var float lastLevel = na
-var color levelColor = na
+avg := math.abs(close - avg) > atr ? 
+  math.avg(close, avg)
+  : avg + os * (hold / mult / slope)
 
-// Update the level and color based on the most recent pivot
-if not na(highPivot)
-    lastLevel := highPivot
-    levelColor := #ff0000 // Resistance level
+os := math.sign(avg - avg[1])
+hold := os != os[1] ? atr : hold
 
-if not na(lowPivot)
-    lastLevel := lowPivot
-    levelColor := #00ff00 // Support level
+upper := avg + width * hold
+lower := avg - width * hold
 
-// MACD (3)
+
+
+// Calculation for Macd        (3)
 
 res = useCurrentRes ? timeframe.period : resCustom
 
@@ -1616,40 +2104,46 @@ signal = ta.sma(macd, signalLength)
 macd_IsAbove = mtfMacd >= mtfSignal
 macd_IsBelow = mtfMacd < mtfSignal
 
-macd_color = macd_colorChange ? (macd_IsAbove ? bullCss : bearCss) : bearCss
-
+macd_color = macd_colorChange ? (macd_IsAbove ? #00ff00 : #ff0000) : #ff0000
 //-----------------------------------------------------------------------------}
+
 
 
 //-----------------------------------------------------------------------------}
 //Plot
 //-----------------------------------------------------------------------------{
 
-// Plotting the line with dynamic color and Heiken Ashi candles and Plot trend change shapes
+// Plot for EMA Traingle(1)
 
-//plot S-P(1)
-plot(lastLevel, color=levelColor, linewidth=3, title='S&R Line', offset=-rightBars, style = plot.style_linebr)
+plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.belowbar, color=#00ff00, size=size.small, title="Bullish Trend Change")
+plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.abovebar, color=#ff0000, size=size.small, title="Bearish Trend Change")
+plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=#00000000, size=size.small, title="Bullish State")
+plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=#00000000, size=size.small, title="Bearish State")
 
-//plot Candle(2)
-//plotcandle(smooth_ha_open, smooth_ha_high, smooth_ha_low, smooth_ha_close, color=smooth_ha_open > smooth_ha_close ? #ff0000 : #00ff00, title="Smoothed Heiken Ashi")
+// Update previous state
+prevBullish := bullish
+prevBearish := bearish
 
-// plot macd (3)
-plot(smd and not na(mtfMacd) ? mtfMacd : na, title="MACD", color=macd_color, linewidth=4, style = plot.style_linebr)
 
-////plot EMA Tiangle(4)
-plotshape(series=trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=bullCss, size=size.small, title="Bullish Trend Change")
-plotshape(series=trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=bearCss, size=size.small, title="Bearish Trend Change")
-plotshape(series=bullish and not trendChangeBullish ? 1 : na, style=shape.triangleup, location=location.top, color=tempCss, size=size.small, title="Bullish State")
-plotshape(series=bearish and not trendChangeBearish ? 1 : na, style=shape.triangledown, location=location.top, color=tempCss, size=size.small, title="Bearish State")
+
+// Plot for HypT        (2)
+
+css = os == 1 ? bullCss : bearCss
+plot_avg = plot(avg, 'HypT', os != os[1] ? na : css, style = plot.style_linebr, linewidth = 4)
+
+
+
+// Plot for Macd        (3)
+
+plot(smd and not na(mtfMacd) ? mtfMacd : na, title="MACD", color=macd_color, linewidth=4)
+
 
 //-----------------------------------------------------------------------------}
 
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
-/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
 
-
-
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
+/////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// /////////// ///////////
