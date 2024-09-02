@@ -233,7 +233,7 @@ class tradingview_main():
         
         print("BGPJYP =>")
         print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        self.col_bgpjyp = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
         
     def color_ident_bgpjyp(self):
         
@@ -282,7 +282,7 @@ class tradingview_main():
         
         print("OIL =>")
         print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        self.col_oil = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
         
     def color_ident_oil(self):
         
@@ -331,7 +331,7 @@ class tradingview_main():
         
         print("AUDNZD =>")
         print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        self.col_audnzd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
         
     def color_ident_audnzd(self):
         
