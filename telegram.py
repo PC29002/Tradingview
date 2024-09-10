@@ -69,13 +69,9 @@ class TeleMain:
         #time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
-                #print("self.bot.send_message(-1002242173955,us)")
-                #print(a)
             
         elif 'BTC Red' in us:
                 self.mt.sell_btc_order()
-                #print("self.bot.send_message(-1002242173955,us)")
-                #print(a)
                     
         else:
             pass
@@ -83,8 +79,8 @@ class TeleMain:
     def run_crypto(self):
         
         print("\nBot has started")
-        us = self.tr.run_crypto()
-        
+        us = self.tr.run_crypto()        
+                        
         for i in us:
             if i != "avoid":
                 self.bot.send_message(-1002242173955,i)
@@ -94,13 +90,9 @@ class TeleMain:
         #time.sleep(25)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
-                #print("self.bot.send_message(-1002242173955,us)")
-                #print(a)
             
         elif 'BTC Red' in us:
                 self.mt.sell_btc_order()
-                #print("self.bot.send_message(-1002242173955,us)")
-                #print(a)
                     
         else:
             pass
@@ -294,6 +286,7 @@ class tele_main_commands:
 
 #TeleMain().temp()
 #TeleMain().run_us()
+#TeleMain().run_crypto()
 
 import threading
 
@@ -313,6 +306,8 @@ def run():
     
     except Exception as e:
         print(f"Error joining threads: {e}")
+
+run()
 
 
 
