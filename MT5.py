@@ -12,19 +12,21 @@ Password: fwaijP14#
 Server:   Exness-MT5Trial6 
 Balance:  500
 
-            login_id = 181597191
+        login_id = 181597191
             password = "Pcgandu@2002"
             server = "Exness-MT5Trial6"
 
 
 """
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-import MetaTrader5, time, os
+import MetaTrader5, time, os, tradingview
 import pandas as pd
+from datetime import datetime
 
 class mt5():
     def __init__(self):
-        self.mt = MetaTrader5        
+        self.mt = MetaTrader5   
+        self.td = tradingview.tradingview_main()     
     
     def login(self):
         
@@ -33,7 +35,7 @@ class mt5():
                 print("initialize() failed, error code =", self.mt.last_error())
                 quit()
 
-            
+    
             login_id = 146825254
             password = "Pcgandu@2002"
             server = "Exness-MT5Real17"
@@ -144,84 +146,64 @@ class mt5():
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############                
-
-    def swing_high_low(self, lookback=5):
-        try:
-            self.login()
+    def swing_high_low(self):
         
-            # Specify the symbol and timeframe
-            symbol = "BTCUSDm"
-            timeframe = self.mt.TIMEFRAME_M5  # 5-Min timeframe
-
-            # Retrieve historical data
-            rates = self.mt.copy_rates_from_pos(symbol, timeframe, 0, 1000)  # 1000 most recent candles
-
-            # Convert to DataFrame for easier manipulation
-            data = pd.DataFrame(rates)
-
-            # Define swing high and low detection function
-            def find_swings(data, lookback):
-                data['swing_high'] = data['high'][
-                    (data['high'] > data['high'].shift(1)) &
-                    (data['high'] > data['high'].shift(-1)) &
-                    (data['high'] > data['high'].shift(lookback)) &
-                    (data['high'] > data['high'].shift(-lookback))
-                ]   
-                data['swing_low'] = data['low'][
-                    (data['low'] < data['low'].shift(1)) &
-                    (data['low'] < data['low'].shift(-1)) &
-                    (data['low'] < data['low'].shift(lookback)) &
-                    (data['low'] < data['low'].shift(-lookback))
-                ]
-                return data
-
-            # Apply swing detection
-            swings = find_swings(data, lookback)
-
-            # Check if swings data is not empty
-            if not swings.dropna(subset=['swing_high']).empty:
-                most_recent_swing_high = swings.dropna(subset=['swing_high']).iloc[-1]
-            else:
-                most_recent_swing_high = None
-
-            if not swings.dropna(subset=['swing_low']).empty:
-                most_recent_swing_low = swings.dropna(subset=['swing_low']).iloc[-1]
-            else:
-                most_recent_swing_low = None
-
-            # Display results
-            if most_recent_swing_high is not None:
-                print("Swing High: ", most_recent_swing_high['swing_high'])
-                high = most_recent_swing_high['swing_high']
-            else:
-                print("No swing high detected.")
-                high = None
-
-            if most_recent_swing_low is not None:
-                print("Swing Low:  ", most_recent_swing_low['swing_low'])
-                low = most_recent_swing_low['swing_low']
-            else:
-                print("No swing low detected.")
-                low = None
-
-            self.low_sl  = low
-            self.high_sl = high 
+        self.login()
         
-        except Exception as e:
-            print("Check Network or user-details invalid\nMT5 Order Error")
-            print(e)
-            self.shutdown()
+        symbol = "BTCUSDm"
+        timeframe = self.mt.TIMEFRAME_M5  # 5-minute time frame
+        lookback_period = 5  # Lookback period for finding swing highs/lows
+        bars_to_check = 100  # Number of bars to fetch for analysis
+    
+        # Get the recent bars
+        utc_from = datetime.now()  # Fetch recent data starting from now
+        rates = self.mt.copy_rates_from(symbol, timeframe, utc_from, bars_to_check)
 
+        # Convert to DataFrame for easy handling
+        df = pd.DataFrame(rates)
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+
+        # Find the swing high (if the high of the current candle is greater than the highs of the surrounding candles)
+        def is_swing_high(df, index, period):
+            if index < period or index >= len(df) - period:
+                return False
+            high = df['high'][index]
+            for i in range(1, period + 1):
+                if high <= df['high'][index - i] or high <= df['high'][index + i]:
+                    return False
+            return True
+
+        # Find the swing low (if the low of the current candle is less than the lows of the surrounding candles)
+        def is_swing_low(df, index, period):
+            if index < period or index >= len(df) - period:
+                return False
+            low = df['low'][index]
+            for i in range(1, period + 1):
+                if low >= df['low'][index - i] or low >= df['low'][index + i]:
+                    return False
+            return True
+
+        # Initialize variables to store the most recent swing high and low
+        recent_swing_high = None
+        recent_swing_low = None
+
+        # Loop through the data to find the most recent swing high and low
+        for i in range(lookback_period, len(df) - lookback_period):
+            if is_swing_high(df, i, lookback_period):
+                self.recent_swing_high = df['high'][i]
+            if is_swing_low(df, i, lookback_period):
+                self.recent_swing_low = df['low'][i]
+        print(f"Most recent swing high: {self.recent_swing_high}")
+        print(f"Most recent swing low : {self.recent_swing_low }")
+        return recent_swing_high, recent_swing_low
+    
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 
     def temp(self):
-
-        self.swing_high_low()
-        #time.sleep(2)
         
-        low  = self.low_sl
-        high = self.high_sl
+        low  = self.recent_swing_low
+        high = self.recent_swing_high
         
         #print(low, "\n", high)
         
@@ -237,26 +219,36 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
     def buy_btcusd(self):
+                
+        self.swing_high_low()
+        time.sleep(3)
         
-        #self.swing_high_low()
-        #time.sleep(2)
+        high = self.recent_swing_high
+        low  = self.recent_swing_low
+        
+        time.sleep(1)
         
         symbol = "BTCUSDm"
         buy    = self.mt.symbol_info_tick(symbol).ask
         sell   = self.mt.symbol_info_tick(symbol).bid
 
+        print(f'high = {high}')
+        print(f'low  = {low }')
+        print(f'buy  = {buy }')
+        
         spread = buy - sell
-        print("Spread: ", spread)
+        print(f"Spread = {spread}")
         
-        tp = buy + 200
-        sl = (buy - 160) - spread
+        sl   = low
+        temp = (buy - sl) * 2
+        tp   = temp + buy
         
-        """tp = ((buy - self.low_sl)*2) + buy
-        sl = self.low_sl"""
+        print(f'TP = {tp}')
         
         request = {
             'action': self.mt.TRADE_ACTION_DEAL,
             'symbol': symbol,
+            #"volume": 10.0,
             'volume': 0.01,
             'price': buy,
             'tp': tp,
@@ -285,7 +277,7 @@ class mt5():
         try: 
             
             self.login()
-            print = self.buy_btcusd()
+            self.buy_btcusd()
             
             
             time.sleep(2)
@@ -302,27 +294,36 @@ class mt5():
 
     def sell_btcusd(self):
         
-        #self.swing_high_low()
-        #time.sleep(2)
+        self.swing_high_low()
+        time.sleep(3)    
         
+        high = self.recent_swing_high
+        low  = self.recent_swing_low
+                
         symbol = "BTCUSDm"
-        buy    = self.mt.symbol_info_tick("BTCUSDm").ask
-        sell   = self.mt.symbol_info_tick("BTCUSDm").bid
+        buy    = self.mt.symbol_info_tick(symbol).ask
+        sell   = self.mt.symbol_info_tick(symbol).bid
+
+        print(f'high  = {high}')
+        print(f'low   = {low }')
+        print(f'buy   = {buy }')
+        print(f'sell  = {sell }')
         
         spread = buy - sell
-        print("Spread: ", spread)
-        
-        tp = sell - 200 - spread
-        sl = (sell + 160) + spread
-        
-        """tp = ((self.high_sl - sell)*2) - sell
-        sl = self.high_sl"""
+        print(f"Spread = {spread}")
+
+        sl   = high
+        temp = (sl - sell) *2
+        tp   = sell - temp
+
+        print(f'TP = {tp }')
+        print(f'SL = {sl }')
         
         request = {
         "action": self.mt.TRADE_ACTION_DEAL,
         "symbol": symbol,
-        #"volume": 3,
-        "volume": 0.01,
+        #"volume": 10.0,
+        'volume': 0.01,
         "type": self.mt.ORDER_TYPE_SELL,
         "price": sell,
         "tp": tp,
@@ -365,9 +366,11 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
     
 
+
+
 #mt5().buy_btc_order()
 #mt5().sell_btc_order()
 #mt5().acc_info()
 
-#mt5().swing_high_low()
-#mt5().temp()
+
+
