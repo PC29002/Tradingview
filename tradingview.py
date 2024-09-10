@@ -2,19 +2,22 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.color import Color
-import time
-import pickle
+from selenium.webdriver.common.keys import Keys
+import time, pickle
 
 class tradingview_main():
 
-
+    def __init__(self):
+        
+        pass
+        
     def selenium(self):
         
         option = webdriver.ChromeOptions()
         option.add_experimental_option("detach",True)
         #option.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service('chromedriver.exe'), options=option)
-
+        
     
     def loadcookie(self):
         self.driver.get("https://www.tradingview.com/accounts/signin/")
@@ -59,9 +62,9 @@ class tradingview_main():
         time.sleep(5)    
 
         # 1 EMA Triangle and SuperTrend Cross    
-        # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
+        # HypT
+        HypT    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        HypThex = Color.from_string(HypT).hex    
         
         #Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
@@ -74,29 +77,24 @@ class tradingview_main():
         EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[4]/div").value_of_css_property("color")
         EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
         
-        
         print("BTCUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
-        
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex)
+        self.col_btcusd   = [EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex]
+                
+            
     def color_ident_btc(self):
         
         # 1 EMA Triangle and SuperTrend Cross
         b = self.col_btcusd
+                
+        """green = #00ff00
+        red   = #ffff00"""
         
-        """"if  (b[0] == b[2] == b[3] == "#00ff00"):
+        if  (b[0] == b[2] == b[3] == "#00ff00"):
             #print("BTC Green")
             unit = "BTC Green"
         
-        elif (b[1] == b[2] == b[3] == "#ff0000"):
-            #print("BTC Red")
-            unit = "BTC Red"""""
-        
-        if  (b[0] == b[2] == "#00ff00"):
-            #print("BTC Green")
-            unit = "BTC Green"
-        
-        elif (b[1] == b[2] == "#ff0000"):
+        elif (b[1] == b[2] == b[3]  == "#ffff00"):
             #print("BTC Red")
             unit = "BTC Red"
 
@@ -108,53 +106,7 @@ class tradingview_main():
                 
     
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
-    def chart_ethusd(self):
-        
-        self.driver.get("https://in.tradingview.com/chart/?symbol=BINANCE%3AETHUSD")
-        
-        # EFmus
-        time.sleep(5)    
-
-        # 1 EMA Triangle and SuperTrend Cross    
-        # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
-        
-        #Macd
-        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
-        macdhex = Color.from_string(macd).hex 
-        
-        #BASE Indicator
-        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
-        EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
-        
-        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[4]/div").value_of_css_property("color")
-        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
-        
-        
-        print("ETHUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_ethusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
-        
-    def color_ident_ethusd(self):
-        
-        # 1 EMA Triangle and SuperTrend Cross
-        b = self.col_ethusd
-        
-        if  (b[0] == b[2] == b[3] == "#00ff00"):
-            #print("BTC Green")
-            unit = "ETHUSD Green"
-        
-        elif (b[1] == b[2] == b[3] == "#ff0000"):
-            #print("BTC Red")
-            unit = "ETHUSD Red"
-
-        else:
-            #print("avoid")
-            unit = "avoid"
-                
-        return unit
-
+    
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
     def chart_xauusd(self):
         
@@ -166,8 +118,8 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross    
         
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
+        HypT    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        HypThex = Color.from_string(HypT).hex    
         
         #Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
@@ -182,8 +134,8 @@ class tradingview_main():
         
         
         print("XAUUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_btcusd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex)
+        self.col_xauusd = [EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex]
         
     def color_ident_xauusd(self):
         
@@ -216,8 +168,8 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross    
         
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
+        HypT    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        HypThex = Color.from_string(HypT).hex    
         
         #Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
@@ -232,8 +184,8 @@ class tradingview_main():
         
         
         print("BGPJYP =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_bgpjyp = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex)
+        self.col_bgpjyp = [EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex]
         
     def color_ident_bgpjyp(self):
         
@@ -265,8 +217,8 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross    
         
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
+        HypT    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        HypThex = Color.from_string(HypT).hex    
         
         #Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
@@ -281,8 +233,8 @@ class tradingview_main():
         
         
         print("OIL =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_oil = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex)
+        self.col_oil = [EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex]
         
     def color_ident_oil(self):
         
@@ -314,8 +266,8 @@ class tradingview_main():
         # 1 EMA Triangle and SuperTrend Cross    
         
         # S-P
-        SuppRes    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
-        SuppReshex = Color.from_string(SuppRes).hex    
+        HypT    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
+        HypThex = Color.from_string(HypT).hex    
         
         #Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
@@ -330,8 +282,8 @@ class tradingview_main():
         
         
         print("AUDNZD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex)
-        self.col_audnzd = [EMA_TrianglehexG, EMA_TrianglehexR, SuppReshex, macdhex]
+        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex)
+        self.col_audnzd = [EMA_TrianglehexG, EMA_TrianglehexR, HypThex, macdhex]
         
     def color_ident_audnzd(self):
         
@@ -396,14 +348,12 @@ class tradingview_main():
             self.usecookie()
 
             self.chart_btcusd()
-            self.chart_ethusd()
             
             self.driver.quit()
             
             a = self.color_ident_btc()
-            b = self.color_ident_ethusd()
         
-            color = [a, b]
+            color = [a]
             return color
         
         except Exception as e:
@@ -412,17 +362,10 @@ class tradingview_main():
             self.driver.quit()
 
 
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############
-        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
 
     
-def test():
-    
-    print("\nBot has started")
-    z = tradingview_main()
-    
-    #print(z.run_uscap())
-    print(z.run_crypto())
+
+
