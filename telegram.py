@@ -43,7 +43,7 @@ a = TeleMain()
 
 ########################
 
-import MT5, schedule, time, tradingview, telebot, sys
+import MT5, schedule, time, tradingview, telebot, os
 
 class TeleMain:
     
@@ -54,27 +54,6 @@ class TeleMain:
         self.bot = telebot.TeleBot(token)
         self.mt = MT5.mt5()
         self.running = False 
-    
-    def run_us(self):
-        
-        print("\nBot has started")
-        us = self.tr.run_uscap()
-        
-        for i in us:
-            if i != "avoid":
-                self.bot.send_message(-1002242173955,i)
-                #self.bot.send_message(5626388450, i)
-                print(i)
-                    
-        #time.sleep(25)
-        if 'BTC Green' in us:
-                self.mt.buy_btc_order()
-            
-        elif 'BTC Red' in us:
-                self.mt.sell_btc_order()
-                    
-        else:
-            pass
     
     def run_crypto(self):
         
@@ -87,7 +66,7 @@ class TeleMain:
                 #self.bot.send_message(5626388450, i)
                 print(i)
                     
-        #time.sleep(25)
+        #time.sleep(20)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
             
@@ -146,19 +125,6 @@ class TeleMain_schedule():
         
         self.teleschedule = TeleMain()
     
-    def schedule_bot_us(self):
-        
-        try:
-    
-            self.teleschedule.run_us()
-            self.teleschedule.stop()
-    
-        except Exception as e:
-        
-            print(f"An error occurred: {e}")
-            telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(5626388450,e)
-            self.teleschedule.stop()
-    
     def schedule_bot_crypto(self):
         
         try:
@@ -172,32 +138,23 @@ class TeleMain_schedule():
             telebot.TeleBot("6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI").send_message(5626388450,e)
             self.teleschedule.stop()
     
-    def schedule_us(self):
-    
-        for hour in range(24): 
-            
-            for minute in [4, 34]:
-                time_str = f"{hour:02d}:{minute:02d}"   
-                
-                schedule.every().monday.at(time_str).do(self.schedule_bot_us)
-                schedule.every().tuesday.at(time_str).do(self.schedule_bot_us)
-                schedule.every().wednesday.at(time_str).do(self.schedule_bot_us)
-                schedule.every().thursday.at(time_str).do(self.schedule_bot_us)
-                schedule.every().friday.at(time_str).do(self.schedule_bot_us)
-    
     def schedule_crypto(self):
         
         for hour in range(24):
             for minute in [4, 34]:
         
                 time_str = f"{hour:02d}:{minute:02d}"
+                schedule.every().monday.at(time_str).do(self.schedule_bot_crypto)
+                schedule.every().tuesday.at(time_str).do(self.schedule_bot_crypto)
+                schedule.every().wednesday.at(time_str).do(self.schedule_bot_crypto)
+                schedule.every().thursday.at(time_str).do(self.schedule_bot_crypto)
+                schedule.every().friday.at(time_str).do(self.schedule_bot_crypto)
                 schedule.every().saturday.at(time_str).do(self.schedule_bot_crypto)
                 schedule.every().sunday.at(time_str).do(self.schedule_bot_crypto)
     
     def run(self):
         
         print(time.ctime(time.time()))
-        self.schedule_us()
         self.schedule_crypto()  
         
         while True:
@@ -261,7 +218,7 @@ class tele_main_commands:
             #self.teleschedule.bot.send_message(-1002242173955,"Stopping the script")
             self.teleschedule.bot.send_message(5626388450, "Stopping the script")          
             print("Stopping the script")
-            sys.exit()
+            os._exit(0)
             
     
     def start_run(self):
@@ -272,6 +229,7 @@ class tele_main_commands:
             self.check_profit() 
             self.get_total_order()
             self.close_positions()
+            self.stop_script()
             
         
         except Exception as e:
@@ -288,7 +246,7 @@ class tele_main_commands:
 #TeleMain().run_us()
 #TeleMain().run_crypto()
 
-import threading
+"""import threading
 
 def run():
     a = TeleMain_schedule()
@@ -305,9 +263,11 @@ def run():
         thread_b.join()
     
     except Exception as e:
-        print(f"Error joining threads: {e}")
+        print(f"Error joining threads: {e}")"""
+        
+#TeleMain().run_crypto()
 
-run()
+
 
 
 
