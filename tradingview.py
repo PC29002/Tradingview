@@ -306,8 +306,7 @@ class tradingview_main():
 
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
-    
-    def run_uscap(self):
+    def run_crypto(self):
         
         try:
             
@@ -323,37 +322,13 @@ class tradingview_main():
             
             self.driver.quit()
             
-            a     = self.color_ident_btc()
-            b     = self.color_ident_xauusd()
-            c     = self.color_ident_bgpjyp()
-            d     = self.color_ident_audnzd()
-            e     = self.color_ident_oil()
+            a = self.color_ident_btc()
+            b = self.color_ident_xauusd()
+            c = self.color_ident_bgpjyp()
+            d = self.color_ident_audnzd()
+            e = self.color_ident_oil()
         
             color = [a, b, c, d, e]
-            return color
-        
-        except Exception as e:
-            
-            print(e)
-            self.driver.quit()
-        
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
-###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
-    def run_crypto(self):
-        
-        try:
-            
-            print(time.ctime(time.time()))
-            self.selenium()
-            self.usecookie()
-
-            self.chart_btcusd()
-            
-            self.driver.quit()
-            
-            a = self.color_ident_btc()
-        
-            color = [a]
             return color
         
         except Exception as e:
@@ -368,4 +343,7 @@ class tradingview_main():
 
     
 
+
+
+#tradingview_main().run_crypto()
 
