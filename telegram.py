@@ -53,20 +53,20 @@ class TeleMain:
         token = "6769710324:AAEzopLaKNaWvxQ31Uk5UtAQG4f4v4ImfhI"
         self.bot = telebot.TeleBot(token)
         self.mt = MT5.mt5()
-        self.running = False 
+        self.stop_running = True
     
     def run_crypto(self):
         
         print("\nBot has started")
-        us = self.tr.run_crypto()        
-                        
+        us = self.tr.run_crypto()  
+                    
         for i in us:
             if i != "avoid":
-                self.bot.send_message(-1002242173955,i)
-                #self.bot.send_message(5626388450, i)
+                #self.bot.send_message(-1002242173955,i)
+                self.bot.send_message(5626388450, i)
                 print(i)
                     
-        #time.sleep(20)
+        time.sleep(18)
         if 'BTC Green' in us:
                 self.mt.buy_btc_order()
             
@@ -81,11 +81,9 @@ class TeleMain:
         self.bot.send_message(-1002242173955," END OF TEST RUN")
     
     def start(self):
-        
         self.running = True
         
         try:
-        
             self.bot.infinity_polling()
         
         except Exception as e:
@@ -122,13 +120,11 @@ class TeleMain:
 class TeleMain_schedule():
     
     def __init__(self):
-        
         self.teleschedule = TeleMain()
     
     def schedule_bot_crypto(self):
         
         try:
-    
             self.teleschedule.run_crypto()
             self.teleschedule.stop()
     
@@ -153,7 +149,7 @@ class TeleMain_schedule():
                 schedule.every().sunday.at(time_str).do(self.schedule_bot_crypto)
     
     def run(self):
-        
+    
         print(time.ctime(time.time()))
         self.schedule_crypto()  
         
@@ -176,8 +172,8 @@ class tele_main_commands:
                 'cord -> Close all Opened Positions'
             ]
             for i in help_messages:
-                #self.teleschedule.bot.send_message(5626388450, i) 
-                self.teleschedule.bot.send_message(-1002242173955, i)
+                self.teleschedule.bot.send_message(5626388450, i) 
+                #self.teleschedule.bot.send_message(-1002242173955, i)
                 print(i)
     
     def check_profit(self):
@@ -216,8 +212,8 @@ class tele_main_commands:
         def stop_script(message):
             
             #self.teleschedule.bot.send_message(-1002242173955,"Stopping the script")
-            self.teleschedule.bot.send_message(5626388450, "Stopping the script")          
-            print("Stopping the script")
+            self.teleschedule.bot.send_message(5626388450, "Stopping the script-A")          
+            print("Stopping the script-A")
             os._exit(0)
             
     
@@ -243,10 +239,10 @@ class tele_main_commands:
 ###############################     ###############################     ###############################     ###############################     ###############################     ###############################
 
 #TeleMain().temp()
-#TeleMain().run_us()
 #TeleMain().run_crypto()
 
-"""import threading
+
+import threading
 
 def run():
     a = TeleMain_schedule()
@@ -263,11 +259,6 @@ def run():
         thread_b.join()
     
     except Exception as e:
-        print(f"Error joining threads: {e}")"""
+        print(f"Error joining threads: {e}")
         
-#TeleMain().run_crypto()
-
-
-
-
-
+run()
