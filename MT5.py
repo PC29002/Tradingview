@@ -12,10 +12,11 @@ Password: fwaijP14#
 Server:   Exness-MT5Trial6 
 Balance:  500
 
-        login_id = 181597191
+        """"""login_id = 146825254
             password = "Pcgandu@2002"
-            server = "Exness-MT5Trial6"
-
+            server = "Exness-MT5Real17"""""""
+            
+        
 
 """
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
@@ -35,11 +36,10 @@ class mt5():
                 print("initialize() failed, error code =", self.mt.last_error())
                 quit()
 
-    
-            login_id = 146825254
-            password = "Pcgandu@2002"
-            server = "Exness-MT5Real17"
             
+            login_id = 176632309
+            password = "fwaijP14#"
+            server   = "Exness-MT5Trial7"
             
             if self.mt.login(login_id, password, server):
                 print("Logged in successfully")
@@ -95,30 +95,46 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
 
     def close_positions(self):
-        try: 
-            positions = self.mt.positions_get()
+        try:
+            self.login()
+            time.sleep(2)
+            open_positions = self.mt.positions_get()
 
-            if not positions:
-                print("No Opened Positions")
-                return  # No need to shut down if there are no open positions
+            # Check if there are any open positions
+            if open_positions is None or len(open_positions) == 0:
+                print("No open positions to close, error code =", self.mt.last_error())
+            else:
+                # Loop through all open positions and close them
+                for position in open_positions:
+                    # Define the trade request to close the position
+                    request = {
+                        "action": self.mt.TRADE_ACTION_DEAL,
+                        "symbol": position.symbol,
+                        "volume": position.volume,
+                        "position": position.ticket,
+                        "type": self.mt.ORDER_TYPE_SELL if position.type == self.mt.POSITION_TYPE_BUY else self.mt.ORDER_TYPE_BUY,  # Opposite type to close
+                        "price": self.mt.symbol_info_tick(position.symbol).bid if position.type == self.mt.POSITION_TYPE_BUY else self.mt.symbol_info_tick(position.symbol).ask,
+                        "comment": "Position closed",
+                        "type_time": self.mt.ORDER_TIME_GTC,  # Good till cancelled
+                        "type_filling": self.mt.ORDER_FILLING_IOC,  # Immediate or cancel
+                    }
 
-            for position in positions:
-                result = self.mt.Close(symbol='BTCUSDm', ticket=position.ticket)
+                    # Send the close request
+                    result = self.mt.order_send(request)
 
-                if result:
-                    print(f"Position {position.ticket} closed successfully")
-                    return f"Position {position.ticket} closed successfully"
-                else:
-                    print(f"Failed to close position {position.ticket}")
-                    return f"Failed to close position {position.ticket}"
-                
-            # Shut down MetaTrader 5 after attempting to close all positions
+                    # Check the result of the request
+                    if result.retcode != self.mt.TRADE_RETCODE_DONE:
+                        print(f"Failed to close position {position.ticket}, error code: {result.retcode}")
+                    else:
+                        print(f"Position {position.ticket} for {position.symbol} closed successfully.")
+
+            # Shutdown after processing all positions
             self.shutdown()
-    
+
         except Exception as e:
             print("Error:", e)
-            self.shutdown()
-            return "Error:", e
+            self.shutdown()  # Shutdown in case of any error
+            return f"Error: {e}"
 
 
     
@@ -220,36 +236,38 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############            
     def buy_btcusd(self):
                 
-        self.swing_high_low()
+        """self.swing_high_low()
         time.sleep(3)
         
         high = self.recent_swing_high
         low  = self.recent_swing_low
         
-        time.sleep(1)
+        time.sleep(1)"""
         
         symbol = "BTCUSDm"
         buy    = self.mt.symbol_info_tick(symbol).ask
         sell   = self.mt.symbol_info_tick(symbol).bid
 
-        print(f'high = {high}')
+        """print(f'high = {high}')
         print(f'low  = {low }')
-        print(f'buy  = {buy }')
+        print(f'buy  = {buy }')"""
         
         spread = buy - sell
         print(f"Spread = {spread}")
         
-        sl   = low
+        """sl   = low
         temp = (buy - sl) * 2
-        tp   = temp + buy
+        tp   = temp + buy"""
+        sl = buy - 80
+        tp = buy + 100
         
         print(f'TP = {tp}')
         
         request = {
             'action': self.mt.TRADE_ACTION_DEAL,
             'symbol': symbol,
-            #"volume": 10.0,
-            'volume': 0.01,
+            "volume": 1.0,
+            #'volume': 0.01,
             'price': buy,
             'tp': tp,
             'sl': sl,
@@ -294,27 +312,30 @@ class mt5():
 
     def sell_btcusd(self):
         
-        self.swing_high_low()
+        """self.swing_high_low()
         time.sleep(3)    
         
         high = self.recent_swing_high
-        low  = self.recent_swing_low
+        low  = self.recent_swing_low"""
                 
         symbol = "BTCUSDm"
         buy    = self.mt.symbol_info_tick(symbol).ask
         sell   = self.mt.symbol_info_tick(symbol).bid
 
-        print(f'high  = {high}')
+        """print(f'high  = {high}')
         print(f'low   = {low }')
         print(f'buy   = {buy }')
-        print(f'sell  = {sell }')
+        print(f'sell  = {sell }')"""
         
         spread = buy - sell
         print(f"Spread = {spread}")
 
-        sl   = high
+        """sl   = high
         temp = (sl - sell) *2
-        tp   = sell - temp
+        tp   = sell - temp"""
+        
+        sl = sell + 80
+        tp = sell - 100
 
         print(f'TP = {tp }')
         print(f'SL = {sl }')
@@ -323,7 +344,7 @@ class mt5():
         "action": self.mt.TRADE_ACTION_DEAL,
         "symbol": symbol,
         #"volume": 10.0,
-        'volume': 0.01,
+        'volume': 1.0,
         "type": self.mt.ORDER_TYPE_SELL,
         "price": sell,
         "tp": tp,
@@ -366,11 +387,13 @@ class mt5():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############        
     
 
+#mt5().login()
+#mt5().acc_info()
 
 
 #mt5().buy_btc_order()
 #mt5().sell_btc_order()
-#mt5().acc_info()
 
-
-
+#mt5().profit()
+#time.sleep(10)
+#mt5().close_positions()
