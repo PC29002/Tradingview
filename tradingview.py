@@ -59,24 +59,40 @@ class tradingview_main():
         print("Login Successful")
         print("\n")
 
-        # EFmus
+        
         time.sleep(5)    
 
-        # 30 Mins Scalping    
+        # 30 Mins Scalping - MACD   
         # Macd
         macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex    
         
         #BASE Indicator
-        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[7]/div").value_of_css_property("color")
+        macd_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[7]/div").value_of_css_property("color")
+        macd_TrianglehexG = Color.from_string(macd_TriangleG).hex    
+        
+        macd_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[8]/div").value_of_css_property("color")
+        macd_TrianglehexR = Color.from_string(macd_TriangleR).hex  
+        
+        ##########################################################
+        
+        # 30 Mins Scalping - EMA   
+        # EMA
+        EMA    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[5]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[5]/div").value_of_css_property("color")
+        EMAhex = Color.from_string(EMA).hex    
+        
+        #BASE Indicator
+        EMA_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[5]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         EMA_TrianglehexG = Color.from_string(EMA_TriangleG).hex    
         
-        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[8]/div").value_of_css_property("color")
-        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex  
+        EMA_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[5]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
+        EMA_TrianglehexR = Color.from_string(EMA_TriangleR).hex 
+        
         
         print("BTCUSD =>")
-        print("Signal  :",EMA_TrianglehexG, EMA_TrianglehexR, macdhex)
-        self.col_btcusd   = [EMA_TrianglehexG, EMA_TrianglehexR, macdhex]
+        print("Signal MACD :",macd_TrianglehexG, macd_TrianglehexR, macdhex)
+        print("Signal EMA  :",EMA_TrianglehexG , EMA_TrianglehexR , EMAhex)
+        self.col_btcusd = [macd_TrianglehexG, macd_TrianglehexR, macdhex, EMA_TrianglehexG , EMA_TrianglehexR , EMAhex]
                 
             
     def color_ident_btc(self):
@@ -90,10 +106,18 @@ class tradingview_main():
             #print("BTC Green")
             unit = "BTC Green"
         
-        elif (b[1] == red and b[0] == green):
+        elif (b[1] == red and b[2] == green):
             #print("BTC Red")
             unit = "BTC Red"
 
+        elif (b[3] == green and b[5] == red):
+            #print("BTC Green")
+            unit = "BTC Green"
+        
+        elif(b[4] == red and b[5] == green):
+            #print("BTC Red")
+            unit = "BTC Red"
+        
         else:
             #print("avoid")
             unit = "avoid"
@@ -133,4 +157,4 @@ class tradingview_main():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
 
-    
+
