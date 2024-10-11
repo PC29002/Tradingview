@@ -64,14 +64,14 @@ class tradingview_main():
 
         # 30 Mins Scalping - MACD   
         # Macd
-        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[6]/div").value_of_css_property("color")
+        macd    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div").value_of_css_property("color")
         macdhex = Color.from_string(macd).hex    
         
         #BASE Indicator
-        macd_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[7]/div").value_of_css_property("color")
+        macd_TriangleG    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div").value_of_css_property("color")
         macd_TrianglehexG = Color.from_string(macd_TriangleG).hex    
         
-        macd_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[8]/div").value_of_css_property("color")
+        macd_TriangleR    = self.driver.find_element(By.XPATH,"/html/body/div[2]/div[5]/div[1]/div[1]/div/div[2]/div[3]/div[2]/div/div[2]/div/div/div[2]/div[2]/div/div[3]/div").value_of_css_property("color")
         macd_TrianglehexR = Color.from_string(macd_TriangleR).hex  
         
         ##########################################################
@@ -158,3 +158,7 @@ class tradingview_main():
 ###############    ###############  ############### ############### ############### ############### ############### ############### ############### ############### ############### ###############    
 
 
+#a = tradingview_main().run_crypto()
+"""a.selenium()
+a.usecookie()
+a.chart_btcusd()"""
